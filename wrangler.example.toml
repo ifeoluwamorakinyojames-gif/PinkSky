@@ -1,0 +1,8 @@
+name = "pinksky-beauty-wellness"
+compatibility_date = "2026-10-04"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pinksky-admin"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"

@@ -1,0 +1,12 @@
+node_modules
+dist
+studio-dist
+.env
+.env.*
+!.env.example
+.sanity
+.vercel
+.wrangler
+.DS_Store
+.local-data
+.dev.vars

@@ -1,0 +1,61 @@
+[
+  {
+    "name": "Homepage reads published Sanity content",
+    "sanity": true,
+    "viewport": "desktop",
+    "covers": [
+      "Sanity services",
+      "Sanity rollover banners",
+      "responsive homepage"
+    ],
+    "steps": [
+      "Publish a service and active banner in Sanity",
+      "Open the homepage"
+    ],
+    "expected": "The published service and active banner are visible."
+  },
+  {
+    "name": "Sanity service image update reaches frontend",
+    "viewport": "mobile",
+    "covers": [
+      "service CMS",
+      "Sanity image assets",
+      "live refresh"
+    ],
+    "steps": [
+      "Replace a service main image in Studio",
+      "Publish",
+      "Open the service page"
+    ],
+    "expected": "The new image appears without changing GitHub code."
+  },
+  {
+    "name": "Booking is stored in Sanity",
+    "viewport": "mobile",
+    "covers": [
+      "booking form",
+      "secure server endpoint",
+      "Sanity booking document"
+    ],
+    "steps": [
+      "Submit a valid appointment request",
+      "Open Bookings in Sanity Studio"
+    ],
+    "expected": "A booking document exists with status New Request."
+  },
+  {
+    "name": "Published product appears in shop",
+    "viewport": "desktop",
+    "covers": [
+      "product CMS",
+      "stock",
+      "pricing",
+      "Sanity product images"
+    ],
+    "steps": [
+      "Create and publish a product in Studio",
+      "Open Beauty Shop"
+    ],
+    "expected": "The product appears with its real price and image."
+  }
+]
