@@ -72,14 +72,31 @@ function canWrite(role: string) {
 }
 
 function sanity(env: Env, write = false) {
-  if (!env.SANITY_STUDIO_PROJECT_ID) throw new Error('Missing SANITY_STUDIO_PROJECT_ID')
-  if (write && !env.SANITY_API_WRITE_TOKEN) throw new Error('Missing SANITY_API_WRITE_TOKEN')
+  const projectId = String(env.SANITY_STUDIO_PROJECT_ID || '').trim()
+  const dataset = String(env.SANITY_STUDIO_DATASET || 'production').trim()
+
+  if (!projectId) {
+    throw new Error('Missing SANITY_STUDIO_PROJECT_ID')
+  }
+
+  if (!/^[a-z0-9-]+$/i.test(projectId)) {
+    throw new Error('Invalid Sanity project ID configuration')
+  }
+
+  if (!dataset) {
+    throw new Error('Missing SANITY_STUDIO_DATASET')
+  }
+
+  if (write && !env.SANITY_API_WRITE_TOKEN) {
+    throw new Error('Missing SANITY_API_WRITE_TOKEN')
+  }
+
   return createClient({
-    projectId: env.SANITY_STUDIO_PROJECT_ID,
-    dataset: env.SANITY_STUDIO_DATASET || 'production',
+    projectId,
+    dataset,
     apiVersion: '2026-10-04',
     useCdn: false,
-    token: write ? env.SANITY_API_WRITE_TOKEN : undefined,
+    token: write ? env.SANITY_API_WRITE_TOKEN.trim() : undefined,
   })
 }
 
