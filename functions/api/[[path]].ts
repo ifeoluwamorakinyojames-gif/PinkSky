@@ -172,6 +172,84 @@ export const onRequest = async (context: Ctx) => {
 
   try {
     await ensureSchema(env)
+if (path === '/api/content' && method === 'GET') {
+  const client = sanity(env, false)
+
+  const [
+    services,
+    banners,
+    articles,
+    products,
+    locations,
+    settings,
+    programs,
+    reviews
+  ] = await Promise.all([
+    client.fetch(`*[_type == "service" && published == true] | order(order asc, name asc) {
+      _id, name, "slug": slug.current, eyebrow, short, description,
+      price, duration, items, "image": heroImage.asset->url,
+      "gallery": gallery[].asset->url
+    }`),
+
+    client.fetch(`*[_type == "banner" && active == true &&
+      (!defined(startAt) || startAt <= now()) &&
+      (!defined(endAt) || endAt >= now())]
+      | order(order asc, _createdAt desc) {
+        _id, title, alt, link, order, active, startAt, endAt,
+        "src": image.asset->url, "image": image.asset->url
+      }`),
+
+    client.fetch(`*[_type == "article" && published == true]
+      | order(coalesce(publishedAt, _createdAt) desc) {
+        _id, title, "slug": slug.current, intent, summary, body,
+        seoTitle, metaDescription, publishedAt,
+        "image": featuredImage.asset->url
+      }`),
+
+    client.fetch(`*[_type == "product" && published == true]
+      | order(order asc, name asc) {
+        _id, name, "slug": slug.current, brand, category,
+        regularPrice, salePrice, sku, gtin, stockQuantity, size,
+        variants, shortDescription, description, benefits,
+        ingredients, howToUse, seoTitle, metaDescription, featured,
+        "images": images[].asset->url
+      }`),
+
+    client.fetch(`*[_type == "location" && active == true]
+      | order(order asc, name asc) {
+        _id, name, "slug": slug.current, address, note, phone,
+        openingHours, "image": image.asset->url
+      }`),
+
+    client.fetch(`*[_type == "siteSettings" && _id == "siteSettings"][0] {
+      businessName, tagline, phones, whatsappNumber, email,
+      instagram, facebook, seoTitle, metaDescription,
+      "logo": logo.asset->url
+    }`),
+
+    client.fetch(`*[_type == "offerProgram" && published == true]
+      | order(order asc, title asc) {
+        _id, title, type, description, priceText,
+        "image": image.asset->url
+      }`),
+
+    client.fetch(`*[_type == "review" && published == true]
+      | order(order asc, _createdAt desc) {
+        _id, customerName, text, rating, source
+      }`)
+  ])
+
+  return json({
+    services,
+    banners,
+    articles,
+    products,
+    locations,
+    settings: settings || {},
+    programs,
+    reviews
+  })
+}
 
     if (path === '/api/bookings' && method === 'POST') {
       const body = await parseJson(request)

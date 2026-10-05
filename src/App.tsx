@@ -105,71 +105,63 @@ export default function App() {
     notes: '',
   })
 
-  const refreshSanity = async (fresh = false) => {
-    const client = fresh ? sanityFreshClient : sanityClient
-    if (!client) return
-    try {
-      const [serviceData, bannerData, articleData, productData, locationData, settingData, programData, reviewData] = await Promise.all([
-        client.fetch(SERVICES_QUERY),
-        client.fetch(BANNERS_QUERY),
-        client.fetch(ARTICLES_QUERY),
-        client.fetch(PRODUCTS_QUERY),
-        client.fetch(LOCATIONS_QUERY),
-        client.fetch(SETTINGS_QUERY),
-        client.fetch(PROGRAMS_QUERY),
-        client.fetch(REVIEWS_QUERY),
-      ])
-      if (serviceData?.length) setServices(serviceData)
-      const mappedBanners = (bannerData || [])
-        .filter((b: any) => b.active !== false)
-        .filter((b: any) => {
-          const now = Date.now()
-          const startsOkay = !b.startAt || new Date(b.startAt).getTime() <= now
-          const endsOkay = !b.endAt || new Date(b.endAt).getTime() >= now
-          return startsOkay && endsOkay
-        })
-        .filter((b: any) => !!(b.src || b.image || b.imageUrl))
-        .map((b: any) => ({
-          id: b._id,
-          src: b.src || b.image || b.imageUrl,
-          alt: b.alt || b.title || 'Pink Sky promotion',
-          link: b.link || '#/book',
-          order: b.order ?? 100,
-        }))
-        .sort((a: any, b: any) => a.order - b.order)
+  const refreshSanity = async (_fresh = false) => {
+  try {
+    const response = await fetch('/api/content', {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      cache: 'no-store',
+    })
 
-      setBanners(mappedBanners.length ? mappedBanners : fallbackBanners)
-      setArticles(articleData || [])
-      setProducts(productData || [])
-      if (locationData?.length) setLocations(locationData)
-      setSettings(settingData || {})
-      setPrograms(programData || [])
-      setReviews(reviewData || [])
-    } catch (error) {
-      console.error('Sanity refresh failed', error)
+    if (!response.ok) {
+      throw new Error('Content API failed: ' + response.status)
     }
-  }
 
-  useEffect(() => {
+    const data = await response.json()
+
+    if (data.services?.length) setServices(data.services)
+
+    const mappedBanners = (data.banners || [])
+      .filter((b: any) => b.active !== false)
+      .filter((b: any) => !!(b.src || b.image || b.imageUrl))
+      .map((b: any) => ({
+        id: b._id,
+        src: b.src || b.image || b.imageUrl,
+        alt: b.alt || b.title || 'Pink Sky promotion',
+        link: b.link || '#/book',
+        order: b.order ?? 100,
+      }))
+      .sort((a: any, b: any) => a.order - b.order)
+
+    setBanners(mappedBanners.length ? mappedBanners : fallbackBanners)
+    setArticles(data.articles || [])
+    setProducts(data.products || [])
+
+    if (data.locations?.length) setLocations(data.locations)
+
+    setSettings(data.settings || {})
+    setPrograms(data.programs || [])
+    setReviews(data.reviews || [])
+  } catch (error) {
+    console.error('PinkSky content refresh failed', error)
+  }
+}
+  
+useEffect(() => {
     refreshSanity(true)
     const routeListener = () => setRoute(routeValue())
     window.addEventListener('hashchange', routeListener)
     window.addEventListener('focus', () => refreshSanity(true))
 
-    let subscription: {unsubscribe: () => void} | undefined
-    if (sanityFreshClient) {
-      subscription = sanityFreshClient
-        .listen('*[_type in ["service","banner","article","product","location","siteSettings","offerProgram","review"]]')
-        .subscribe(() => refreshSanity(true))
-    }
-    let channel: BroadcastChannel | undefined
+       let channel: BroadcastChannel | undefined
     try {
       channel = new BroadcastChannel('pinksky-cms')
       channel.onmessage = () => refreshSanity(true)
     } catch {}
     return () => {
       window.removeEventListener('hashchange', routeListener)
-      subscription?.unsubscribe()
       channel?.close()
     }
   }, [])
