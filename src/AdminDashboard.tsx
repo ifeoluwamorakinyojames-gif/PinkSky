@@ -101,7 +101,7 @@ function Editor({
   section, record, user, onClose, onSaved, onDeleted
 }:{section:Section; record:any; user:AdminUser; onClose:()=>void; onSaved:(x:any)=>void; onDeleted:()=>void}) {
   const isNew=!!record?._new
-  const [form,setForm]=useState<any>(()=>({...record}))
+  const [form,setForm]=useState<any>(()=>({...record, published: record.published ?? true}))
   const [saving,setSaving]=useState(false)
   const [error,setError]=useState('')
   const [success,setSuccess]=useState('')
@@ -369,3 +369,4 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
       onDeleted={async()=>{await loadCurrent()}}/>}
   </div>
 }
+
