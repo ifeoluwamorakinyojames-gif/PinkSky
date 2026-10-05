@@ -343,23 +343,21 @@ export default function App() {
     }
   }, [])
 
-  const phones = settings.phones || []
+const phones = settings.phones || []
 
-  const whatsappNumber = useMemo(() => {
-    const configured =
-      settings.whatsappNumber ||
-      phones[0] ||
-      ''
+const whatsappNumber = useMemo(() => {
+  const configured =
+    settings.whatsappNumber ||
+    phones[0] ||
+    '08101214336'
 
-    return configured
-      .replace(/[^\d+]/g, '')
-      .replace(/^\+/, '')
-      .replace(/^0/, '234')
-  }, [settings.whatsappNumber, phones])
+  return configured
+    .replace(/[^\d+]/g, '')
+    .replace(/^\+/, '')
+    .replace(/^0/, '234')
+}, [settings.whatsappNumber, phones])
 
-  const whatsapp = whatsappNumber
-    ? 'https://wa.me/' + whatsappNumber
-    : ''
+const whatsapp = 'https://wa.me/' + whatsappNumber
 
   const service =
     route.type === 'service'
