@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState, type FormEvent} from 'react'
+﻿import {useEffect, useMemo, useState, type FormEvent} from 'react'
 import {PortableText} from '@portabletext/react'
 import AdminDashboard from './AdminDashboard'
 import {
@@ -449,28 +449,49 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
     }
   }, [service, product, article, settings])
 
-  const openBooking = (
+    const openBooking = (
     serviceName?: string,
     locationName?: string,
   ) => {
-    setBookingResult('')
-    setBookingError('')
+    const serviceNameForMessage =
+      serviceName ||
+      form.service ||
+      'an appointment'
 
-    setForm(current => ({
-      ...current,
-      service:
-        serviceName ||
-        current.service ||
-        services[0]?.name ||
-        '',
-      location:
-        locationName ||
-        current.location ||
-        locations[0]?.name ||
-        '',
-    }))
+    const matchingBranch = pinkSkyBranches.find(branch =>
+      locationName
+        ? branch.name
+            .toLowerCase()
+            .includes(locationName.toLowerCase()) ||
+          locationName
+            .toLowerCase()
+            .includes(branch.name.toLowerCase())
+        : false,
+    )
 
-    setBookingOpen(true)
+    if (matchingBranch) {
+      window.open(
+        serviceWhatsAppUrl(
+          serviceNameForMessage,
+          matchingBranch,
+        ),
+        '_blank',
+      )
+      return
+    }
+
+    const selected = window.confirm(
+      'Choose your closest Pink Sky branch:\n\nOK - Airport Road, Warri\nCancel - Delta Mall, Effurun',
+    )
+
+    const branch = selected
+      ? pinkSkyBranches[0]
+      : pinkSkyBranches[1]
+
+    window.open(
+      serviceWhatsAppUrl(serviceNameForMessage, branch),
+      '_blank',
+    )
   }
 
   const submitBooking = async (event: FormEvent) => {
@@ -801,7 +822,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                 disabled={submitting}
               >
                 {submitting
-                  ? 'Saving…'
+                  ? 'Savingâ€¦'
                   : 'Request appointment'}
               </button>
             </form>
@@ -904,14 +925,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   </div>
                 ) : null}
 
-                <button
-                  className='primary'
-                  onClick={() =>
-                    openBooking(service.name)
-                  }
-                >
-                  Book this service
-                </button>
+                <div className='service-booking'>`r`n                  <strong>Choose the Pink Sky branch closest to you:</strong>`r`n                  <ServiceWhatsAppLinks serviceName={service.name} />`r`n                </div>
               </div>
             </div>
 
@@ -972,7 +986,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
               <h1>{product.name}</h1>
 
               <h2>
-                ₦
+                â‚¦
                 {Number(
                   product.salePrice ??
                     product.regularPrice ??
@@ -1020,7 +1034,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                 <h2>Benefits</h2>
 
                 {product.benefits.map(item => (
-                  <p key={item}>✓ {item}</p>
+                  <p key={item}>âœ“ {item}</p>
                 ))}
               </article>
             ) : null}
@@ -1202,7 +1216,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                     <h3>{item.name}</h3>
 
                     <p>
-                      ₦
+                      â‚¦
                       {Number(
                         item.salePrice ??
                           item.regularPrice ??
@@ -1514,7 +1528,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                     ))}
                   </div>
 
-                  <p>“{review.text}”</p>
+                  <p>â€œ{review.text}â€</p>
 
                   <strong>
                     {review.customerName}
