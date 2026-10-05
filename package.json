@@ -28,7 +28,6 @@
     "sanity": "^4.9.0"
   },
   "devDependencies": {
-    "@cloudflare/workerd-windows-64": "^1.20261004.1",
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
