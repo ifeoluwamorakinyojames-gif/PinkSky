@@ -190,12 +190,6 @@ export const onRequest = async (context: Ctx) => {
   try {
     await ensureSchema(env)
 
-if (path === '/api/config-check' && method === 'GET') {
-  return json({
-    projectId: String(env.SANITY_STUDIO_PROJECT_ID || '').trim(),
-    dataset: String(env.SANITY_STUDIO_DATASET || 'production').trim(),
-  })
-}
 if (path === '/api/content' && method === 'GET') {
   const client = sanity(env, false)
 
