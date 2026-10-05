@@ -209,6 +209,57 @@ function BannerCarousel({banners}: {banners: Banner[]}) {
   )
 }
 
+const pinkSkyBranches = [
+  {
+    id: 'airport-road',
+    name: 'Airport Road, Warri',
+    whatsapp: '2348120147351',
+    address:
+      'Magnifique House, 67 Airport Road, near Union Bank, opposite Christ Embassy, Warri',
+    otherPhone: '08037416330',
+  },
+  {
+    id: 'delta-mall',
+    name: 'Delta Mall, Effurun',
+    whatsapp: '2348101214336',
+    address: 'Shop 20/23, Delta Mall, Effurun, Delta State',
+  },
+] as const
+
+function serviceWhatsAppUrl(
+  serviceName: string,
+  branch: (typeof pinkSkyBranches)[number],
+) {
+  const message =
+    `Hello Pink Sky, I would like to book ${serviceName} at your ` +
+    `${branch.name} branch. Please send me the available times, ` +
+    `price and booking details. Thank you.`
+
+  return `https://wa.me/${branch.whatsapp}?text=${encodeURIComponent(message)}`
+}
+
+function ServiceWhatsAppLinks({serviceName}: {serviceName: string}) {
+  return (
+    <div
+      className='actions'
+      onClick={event => event.stopPropagation()}
+    >
+      {pinkSkyBranches.map(branch => (
+        <a
+          key={branch.id}
+          className='secondary'
+          href={serviceWhatsAppUrl(serviceName, branch)}
+          target='_blank'
+          rel='noreferrer'
+          onClick={event => event.stopPropagation()}
+        >
+          <MessageCircle size={16} />
+          {branch.name}
+        </a>
+      ))}
+    </div>
+  )
+}
 export default function App() {
   const [route, setRoute] = useState(routeValue())
   const [menu, setMenu] = useState(false)
@@ -514,33 +565,33 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       {menu && (
         <div className='mobile-menu'>
           {[
-            ['', 'Home'],
-            ['services', 'Services'],
-            ['shop', 'Beauty Shop'],
-            ['blog', 'Blog'],
-            ['locations', 'Locations'],
-            ['programs', 'Memberships & Packages'],
-          ].map(([path, label]) => (
-            <button
-              key={label}
-              onClick={() => {
-                go(path)
-                setMenu(false)
-              }}
-            >
-              {label}
-            </button>
-          ))}
+  ['Home', 'home'],
+  ['Services', 'services'],
+  ['Shop', 'shop'],
+  ['Locations', 'locations'],
+].map(([label, path]) => (
+  <button
+    key={label}
+    onClick={() => {
+      go(path)
+      setMenu(false)
+    }}
+  >
+    {label}
+  </button>
+))}
 
-          <button
-            onClick={() => {
-              setMenu(false)
-              openBooking()
-            }}
-          >
-            Book Appointment
-          </button>
-        </div>
+<a
+  className='primary'
+  href='https://wa.me/2348101214336?text=Hello%20Pink%20Sky%2C%20I%20would%20like%20to%20book%20an%20appointment.%20Please%20send%20me%20the%20available%20services%2C%20times%2C%20prices%20and%20booking%20details.%20Thank%20you.'
+  target='_blank'
+  rel='noreferrer'
+  onClick={() => setMenu(false)}
+>
+  <MessageCircle size={17} />
+  Book Appointment on WhatsApp
+</a>
+            </div>
       )}
     </>
   )
@@ -1096,9 +1147,10 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                     )}
 
                     <button>
-                      View service{' '}
-                      <ArrowRight size={15} />
-                    </button>
+  View service <ArrowRight size={15} />
+</button>
+
+<ServiceWhatsAppLinks serviceName={item.name} />
                   </div>
                 </article>
               ))}
