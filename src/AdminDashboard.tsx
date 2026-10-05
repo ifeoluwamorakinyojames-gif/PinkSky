@@ -353,7 +353,7 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
         <div className='admin-quick-grid'>{visibleSections.filter(x=>x!=='dashboard'&&x!=='team').map(key=>{const item=sectionMeta[key],I=item.icon;return <button key={key} onClick={()=>setSection(key)}><I/><strong>{item.label}</strong><span>Open section</span></button>})}</div>
       </section>:<section className='admin-resource-page'>
         <div className='admin-resource-toolbar'><div><span className='admin-kicker'>Manage</span><h2>{meta.label}</h2></div>
-          {canWrite(user.role)&&section!=='bookings'&&section!=='settings'&&<button className='admin-primary' onClick={()=>setSelected({_new:true})}>+ Add new</button>}
+          {canWrite(user.role)&&section!=='bookings'&&section!=='settings'&&<button className='admin-primary' onClick={()=>setSelected({_new:true,published:true,active:true})}>+ Add new</button>}
         </div>
         {loading&&<div className='admin-state'><Loader2 className='spin'/> Loading…</div>}
         {loadError&&<div className='admin-error admin-page-error'>{loadError}</div>}
@@ -369,4 +369,5 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
       onDeleted={async()=>{await loadCurrent()}}/>}
   </div>
 }
+
 

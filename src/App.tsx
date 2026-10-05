@@ -151,7 +151,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    refreshSanity(false)
+    refreshSanity(true)
     const routeListener = () => setRoute(routeValue())
     window.addEventListener('hashchange', routeListener)
     window.addEventListener('focus', () => refreshSanity(true))
@@ -379,3 +379,4 @@ export default function App() {
     {!sanityEnabled && <div className='sanity-notice'>Sanity is not connected yet. Copy <code>.env.example</code> to <code>.env</code> and add your Sanity project ID.</div>}
   </main>{footer}{bookingModal}</div>
 }
+
