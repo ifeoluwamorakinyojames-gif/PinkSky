@@ -265,6 +265,7 @@ export default function App() {
   const [menu, setMenu] = useState(false)
 
   const [services, setServices] = useState<Service[]>([])
+  const [contentLoading, setContentLoading] = useState(true)
   const [banners, setBanners] = useState<Banner[]>([])
   const [articles, setArticles] = useState<Article[]>([])
   const [products, setProducts] = useState<Product[]>([])
@@ -350,7 +351,7 @@ export default function App() {
           nextLocations[0]?.name ||
           '',
       }))
-    } catch (error) {
+        } catch (error) {
       console.error('PinkSky content refresh failed', error)
 
       setServices([])
@@ -361,6 +362,8 @@ export default function App() {
       setPrograms([])
       setReviews([])
       setSettings({})
+    } finally {
+      setContentLoading(false)
     }
   }
 
@@ -856,7 +859,22 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       </div>
     </div>
   )
+     if (
+    contentLoading &&
+    ['service', 'product', 'article'].includes(route.type)
+  ) {
+    return (
+      <div>
+        {header}
 
+        <main className='content'>
+          <p>Loading Pink Sky...</p>
+        </main>
+
+        {footer}
+      </div>
+    )
+  }
    if (service) {
     return (
       <div>
