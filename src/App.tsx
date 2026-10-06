@@ -857,7 +857,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
     </div>
   )
 
-  if (service) {
+   if (service) {
     return (
       <div>
         {header}
@@ -894,24 +894,19 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   <p>{service.description}</p>
                 )}
 
-                {(service.price ||
-                  service.duration) && (
+                {(service.price || service.duration) && (
                   <div className='facts'>
                     {service.price && (
                       <span>
                         <small>Price</small>
-                        <strong>
-                          {service.price}
-                        </strong>
+                        <strong>{service.price}</strong>
                       </span>
                     )}
 
                     {service.duration && (
                       <span>
                         <small>Duration</small>
-                        <strong>
-                          {service.duration}
-                        </strong>
+                        <strong>{service.duration}</strong>
                       </span>
                     )}
                   </div>
@@ -925,7 +920,15 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   </div>
                 ) : null}
 
-                <div className='service-booking'>`r`n                  <strong>Choose the Pink Sky branch closest to you:</strong>`r`n                  <ServiceWhatsAppLinks serviceName={service.name} />`r`n                </div>
+                <div className='service-booking'>
+                  <strong>
+                    Choose the Pink Sky branch closest to you:
+                  </strong>
+
+                  <ServiceWhatsAppLinks
+                    serviceName={service.name}
+                  />
+                </div>
               </div>
             </div>
 
@@ -937,9 +940,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                     <Img
                       key={image + index}
                       src={image}
-                      alt={`${service.name} ${
-                        index + 1
-                      }`}
+                      alt={`${service.name} ${index + 1}`}
                     />
                   ))}
               </div>
