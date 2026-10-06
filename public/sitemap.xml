@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Replace YOUR_FINAL_DOMAIN after the domain is purchased. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://YOUR_FINAL_DOMAIN/</loc></url>
-  <url><loc>https://YOUR_FINAL_DOMAIN/#/services</loc></url>
-  <url><loc>https://YOUR_FINAL_DOMAIN/#/service/teeth-whitening</loc></url>
-  <url><loc>https://YOUR_FINAL_DOMAIN/#/service/microblading-brows</loc></url>
-  <url><loc>https://YOUR_FINAL_DOMAIN/#/shop</loc></url>
-  <url><loc>https://YOUR_FINAL_DOMAIN/#/blog</loc></url>
+  <url>
+    <loc>https://pinkskybeauty.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
 </urlset>
