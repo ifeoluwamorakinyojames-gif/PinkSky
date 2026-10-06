@@ -115,7 +115,7 @@ type Settings = {
 }
 
 function routeValue() {
-  const value = window.location.hash.replace(/^#\/?/, '')
+  const value = window.location.pathname.replace(/^\/+|\/+$/g, '')
 
   if (!value) {
     return {type: 'home', slug: ''}
@@ -127,7 +127,9 @@ function routeValue() {
 }
 
 function go(value = '') {
-  window.location.hash = value ? '#/' + value : '#/'
+  const path = value ? '/' + value : '/'
+window.history.pushState({}, '', path)
+window.dispatchEvent(new PopStateEvent('popstate'))
   window.scrollTo({top: 0, behavior: 'smooth'})
 }
 
@@ -375,7 +377,7 @@ export default function App() {
       refreshContent()
     }
 
-    window.addEventListener('hashchange', routeListener)
+    window.addEventListener('popstate', routeListener)
     window.addEventListener('focus', focusListener)
 
     let channel: BroadcastChannel | undefined
@@ -388,7 +390,7 @@ export default function App() {
     }
 
     return () => {
-      window.removeEventListener('hashchange', routeListener)
+      window.removeEventListener('popstate', routeListener)
       window.removeEventListener('focus', focusListener)
       channel?.close()
     }
