@@ -115,7 +115,7 @@ type Settings = {
 }
 
 function routeValue() {
-  const value = window.location.hash.replace(/^#\/?/, '')
+  const value = window.location.pathname.replace(/^\/+|\/+$/g, '')
 
   if (!value) {
     return {type: 'home', slug: ''}
@@ -123,11 +123,17 @@ function routeValue() {
 
   const [type, slug = ''] = value.split('/')
 
-  return {type, slug}
+  return {
+    type: decodeURIComponent(type),
+    slug: decodeURIComponent(slug),
+  }
 }
 
 function go(value = '') {
-  window.location.hash = value ? '#/' + value : '#/'
+  const path = value ? '/' + value : '/'
+
+  window.history.pushState({}, '', path)
+  window.dispatchEvent(new PopStateEvent('popstate'))
   window.scrollTo({top: 0, behavior: 'smooth'})
 }
 

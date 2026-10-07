@@ -187,7 +187,7 @@ function Editor({
         <Field label='Campaign title'><input value={form.title||''} onChange={e=>set('title',e.target.value)}/></Field>
         <ImageUpload label='Banner image (recommended 1920 × 700)' current={form.image} onUploaded={img=>set('image',img)}/>
         <Field label='Image alt text'><input value={form.alt||''} onChange={e=>set('alt',e.target.value)}/></Field>
-        <Field label='Click-through link'><input value={form.link||''} onChange={e=>set('link',e.target.value)} placeholder='#/service/teeth-whitening'/></Field>
+        <Field label='Click-through link'><input value={form.link||''} onChange={e=>set('link',e.target.value)} placeholder='/service/teeth-whitening'/></Field>
         <div className='admin-form-grid'><Field label='Display order'><input type='number' value={form.order??0} onChange={e=>set('order',Number(e.target.value))}/></Field><Toggle label='Active' checked={form.active!==false} onChange={v=>set('active',v)}/></div>
         <div className='admin-form-grid'><Field label='Start date/time'><input type='datetime-local' value={form.startAt?String(form.startAt).slice(0,16):''} onChange={e=>set('startAt',e.target.value?new Date(e.target.value).toISOString():undefined)}/></Field><Field label='End date/time'><input type='datetime-local' value={form.endAt?String(form.endAt).slice(0,16):''} onChange={e=>set('endAt',e.target.value?new Date(e.target.value).toISOString():undefined)}/></Field></div>
       </>}
