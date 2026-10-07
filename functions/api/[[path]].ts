@@ -330,11 +330,27 @@ if (path === '/api/content' && method === 'GET') {
       if (!data) return json({error:'Image data is required.'},400)
       const binary = Uint8Array.from(atob(data), c => c.charCodeAt(0))
       if (binary.byteLength > 8*1024*1024) return json({error:'Image must be under 8 MB.'},413)
-      const contentType = clean(body.contentType,80) || 'image/jpeg'
-      const asset = await sanity(env,true).assets.upload('image', new Blob([binary], {type: contentType}), {
-        filename: clean(body.filename,180) || 'pinksky-image.jpg',
-        contentType,
-      })
+     const contentType = clean(body.contentType, 80) || 'image/jpeg'
+
+const rawFilename = clean(body.filename, 180)
+
+const safeFilename =
+  rawFilename &&
+  !rawFilename.includes('http://') &&
+  !rawFilename.includes('https://') &&
+  !rawFilename.includes('","') &&
+  !rawFilename.includes('\\"')
+    ? rawFilename.replace(/[^a-zA-Z0-9._-]/g, '-')
+    : `pinksky-image-${Date.now()}.jpg`
+
+const asset = await sanity(env, true).assets.upload(
+  'image',
+  new Blob([binary], {type: contentType}),
+  {
+    filename: safeFilename,
+    contentType,
+  },
+)
       return json({assetId:asset._id,url:asset.url,image:{_type:'image',asset:{_type:'reference',_ref:asset._id}}},201)
     }
 
