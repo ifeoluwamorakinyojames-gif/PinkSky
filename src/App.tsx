@@ -26,6 +26,11 @@ type Service = {
   items?: string[]
   image?: string
   gallery?: string[]
+
+  seoKeyword?: string
+  seoHeading?: string
+  seoTitle?: string
+  metaDescription?: string
 }
 
 type Banner = {
@@ -435,28 +440,168 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       : undefined
 
   useEffect(() => {
-    document.title = service
-      ? `${service.name} in Warri & Effurun | Pink Sky`
-      : product
-        ? `${product.name} | Pink Sky Beauty Shop`
-        : article
-          ? `${article.seoTitle || article.title} | Pink Sky`
-          : settings.seoTitle ||
-            'Pink Sky Beauty & Wellness | Warri & Effurun'
+  const siteName = 'Pink Sky Beauty & Wellness'
+  const siteUrl = 'https://pinkskybeauty.com'
 
-    const meta = document.querySelector(
-      'meta[name="description"]',
-    )
+  const title = service
+    ? service.seoTitle ||
+      `${service.name} in Warri & Effurun | Pink Sky`
+    : product
+      ? `${product.name} | Pink Sky Beauty Shop`
+      : article
+        ? `${article.seoTitle || article.title} | Pink Sky`
+        : settings.seoTitle ||
+          'Pink Sky Beauty & Wellness | Warri & Effurun'
 
-    if (meta) {
-      meta.setAttribute(
-        'content',
-        article?.metaDescription ||
-          settings.metaDescription ||
-          'Pink Sky Beauty & Wellness in Warri and Effurun.',
-      )
+  const description = service
+    ? service.metaDescription ||
+      service.short ||
+      service.description ||
+      `${service.name} at Pink Sky Beauty & Wellness in Warri and Effurun, Delta State.`
+    : article?.metaDescription ||
+      settings.metaDescription ||
+      'Pink Sky Beauty & Wellness in Warri and Effurun, Delta State.'
+
+  document.title = title
+
+  const setMeta = (
+    selector: string,
+    attribute: string,
+    value: string,
+  ) => {
+    let element = document.querySelector(selector)
+
+    if (!element) {
+      element = document.createElement('meta')
+      const match = selector.match(/\[(name|property)="([^"]+)"\]/)
+
+      if (match) {
+        element.setAttribute(match[1], match[2])
+      }
+
+      document.head.appendChild(element)
     }
-  }, [service, product, article, settings])
+
+    element.setAttribute(attribute, value)
+  }
+
+  setMeta(
+    'meta[name="description"]',
+    'content',
+    description,
+  )
+
+  const canonicalUrl =
+    siteUrl +
+    (window.location.pathname === '/'
+      ? ''
+      : window.location.pathname.replace(/\/$/, ''))
+
+  let canonical = document.querySelector(
+    'link[rel="canonical"]',
+  ) as HTMLLinkElement | null
+
+  if (!canonical) {
+    canonical = document.createElement('link')
+    canonical.rel = 'canonical'
+    document.head.appendChild(canonical)
+  }
+
+  canonical.href = canonicalUrl
+
+  setMeta(
+    'meta[property="og:title"]',
+    'content',
+    title,
+  )
+
+  setMeta(
+    'meta[property="og:description"]',
+    'content',
+    description,
+  )
+
+  setMeta(
+    'meta[property="og:url"]',
+    'content',
+    canonicalUrl,
+  )
+
+  setMeta(
+    'meta[property="og:type"]',
+    'content',
+    service ? 'website' : article ? 'article' : 'website',
+  )
+
+  setMeta(
+    'meta[property="og:site_name"]',
+    'content',
+    siteName,
+  )
+
+  setMeta(
+    'meta[name="twitter:card"]',
+    'content',
+    'summary_large_image',
+  )
+
+  setMeta(
+    'meta[name="twitter:title"]',
+    'content',
+    title,
+  )
+
+  setMeta(
+    'meta[name="twitter:description"]',
+    'content',
+    description,
+  )
+
+  const oldSchema = document.getElementById(
+    'pinksky-service-schema',
+  )
+
+  oldSchema?.remove()
+
+  if (service) {
+    const schema = document.createElement('script')
+
+    schema.id = 'pinksky-service-schema'
+    schema.type = 'application/ld+json'
+
+    schema.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: service.name,
+      description,
+      url: canonicalUrl,
+      image: service.image || undefined,
+      provider: {
+        '@type': 'BeautySalon',
+        name: siteName,
+        url: siteUrl,
+        areaServed: [
+          {
+            '@type': 'City',
+            name: 'Warri',
+          },
+          {
+            '@type': 'Place',
+            name: 'Effurun',
+          },
+        ],
+      },
+    })
+
+    document.head.appendChild(schema)
+  }
+
+  return () => {
+    document
+      .getElementById('pinksky-service-schema')
+      ?.remove()
+  }
+}, [service, product, article, settings])
 
     const openBooking = (
     serviceName?: string,
@@ -912,7 +1057,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   </span>
                 )}
 
-                <h1>{service.name}</h1>
+                <h1>{service.seoHeading || service.name}</h1>
 
                 {service.description && (
                   <p>{service.description}</p>

@@ -160,6 +160,16 @@ function Editor({
         <Field label='Short tagline'><input value={form.eyebrow||''} onChange={e=>set('eyebrow',e.target.value)}/></Field>
         <Field label='Short description'><textarea rows={3} value={form.short||''} onChange={e=>set('short',e.target.value)}/></Field>
         <Field label='Full description'><textarea rows={6} value={form.description||''} onChange={e=>set('description',e.target.value)}/></Field>
+       <Field
+  label='SEO page heading (H1)'
+  hint='Example: Teeth Whitening in Warri, Delta State'
+>
+  <input
+    value={form.seoHeading||''}
+    onChange={e=>set('seoHeading',e.target.value)}
+    placeholder='Teeth Whitening in Warri, Delta State'
+  />
+</Field>
         <div className='admin-form-grid'><Field label='Price text'><input value={form.price||''} onChange={e=>set('price',e.target.value)}/></Field><Field label='Duration'><input value={form.duration||''} onChange={e=>set('duration',e.target.value)}/></Field></div>
         <Field label='Service items' hint='One item per line'><textarea rows={6} value={arrText(form.items)} onChange={e=>set('items',lines(e.target.value))}/></Field>
         <ImageUpload label='Main service image' current={form.heroImage} onUploaded={img=>set('heroImage',img)}/><MultiImageUpload label='Service gallery' current={form.gallery||[]} max={8} onUploaded={imgs=>set('gallery',imgs)}/>

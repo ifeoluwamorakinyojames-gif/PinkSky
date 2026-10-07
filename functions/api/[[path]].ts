@@ -204,10 +204,22 @@ if (path === '/api/content' && method === 'GET') {
     reviews
   ] = await Promise.all([
     client.fetch(`*[_type == "service" && published == true] | order(order asc, name asc) {
-      _id, name, "slug": slug.current, eyebrow, short, description,
-      price, duration, items, "image": heroImage.asset->url,
-      "gallery": gallery[].asset->url
-    }`),
+  _id,
+  name,
+  "slug": slug.current,
+  eyebrow,
+  short,
+  description,
+  price,
+  duration,
+  items,
+  seoKeyword,
+  seoHeading,
+  seoTitle,
+  metaDescription,
+  "image": heroImage.asset->url,
+  "gallery": gallery[].asset->url
+}`),
 
     client.fetch(`*[_type == "banner" && active == true &&
       (!defined(startAt) || startAt <= now()) &&
