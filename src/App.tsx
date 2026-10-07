@@ -378,7 +378,7 @@ export default function App() {
       refreshContent()
     }
 
-    window.addEventListener('hashchange', routeListener)
+    window.addEventListener('popstate', routeListener)
     window.addEventListener('focus', focusListener)
 
     let channel: BroadcastChannel | undefined
@@ -391,7 +391,7 @@ export default function App() {
     }
 
     return () => {
-      window.removeEventListener('hashchange', routeListener)
+      window.removeEventListener('popstate', routeListener)
       window.removeEventListener('focus', focusListener)
       channel?.close()
     }
