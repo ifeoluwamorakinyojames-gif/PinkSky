@@ -1311,10 +1311,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                 <article
                   className='card'
                   key={item._id || item.slug}
-                  onClick={() =>
-                    go('service/' + item.slug)
-                  }
-                >
+                                 >
                   <Img
                     src={
                       item.image ||
@@ -1330,7 +1327,10 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                       <p>{item.short}</p>
                     )}
 
-                    <button>
+                    <button
+  type='button'
+  onClick={() => go('service/' + item.slug)}
+>
   View service <ArrowRight size={15} />
 </button>
 
