@@ -170,6 +170,28 @@ function Editor({
     placeholder='Teeth Whitening in Warri, Delta State'
   />
 </Field>
+        {/* PINKSKY_PHASE3_SEO: editorial checks; no ranking guarantees */}
+        <section className='pinksky-seo-panel' style={{border:'1px solid #ead9e2',borderRadius:16,padding:18,margin:'20px 0',background:'#fff8fb'}}>
+          <h3 style={{marginTop:0}}>SEO · AEO · GEO Optimization</h3>
+          <p style={{fontSize:13,color:'#67545e'}}>Improve clarity for customers, search engines and answer systems. Rankings and rich results are not guaranteed.</p>
+          <Field label='Primary search keyword' hint='Example: teeth whitening in Warri'><input value={form.seoKeyword||''} onChange={e=>set('seoKeyword',e.target.value)} placeholder='Main phrase people search for'/></Field>
+          <Field label='Search intent'><select value={form.seoIntent||'Local intent'} onChange={e=>set('seoIntent',e.target.value)}><option>Local intent</option><option>Informational intent</option><option>Commercial investigation</option><option>Transactional intent</option></select></Field>
+          <Field label='SEO title'><input maxLength={120} value={form.seoTitle||''} onChange={e=>set('seoTitle',e.target.value)}/></Field>
+          <Field label='Meta description'><textarea rows={3} maxLength={320} value={form.metaDescription||''} onChange={e=>set('metaDescription',e.target.value)}/></Field>
+          <Field label='Frequently asked questions' hint='Write one question and answer per line, separated with |. Example: How do I book? | Select a branch and contact us on WhatsApp.'><textarea rows={5} value={form.seoFaqText||''} onChange={e=>set('seoFaqText',e.target.value)}/></Field>
+          <div style={{border:'1px solid #ddd',borderRadius:10,padding:14,background:'white',marginTop:14}}>
+            <strong style={{display:'block',color:'#2359a4'}}>{form.seoTitle||form.name||form.title||'Page title'} — Pinksky</strong>
+            <small style={{color:'#17714b'}}>pinkskybeauty.com/{section==='services'?'service':'article'}/{typeof form.slug==='string'?form.slug:form.slug?.current||'your-slug'}</small>
+            <p style={{fontSize:13,marginBottom:0}}>{form.metaDescription||'Add a unique, helpful meta description to preview your page.'}</p>
+          </div>
+          <p style={{fontSize:13}}><strong>Content checklist:</strong> {[
+            [!!(form.seoKeyword||'').trim(),'Keyword'],
+            [!!(form.seoTitle||'').trim(),'SEO title'],
+            [!!(form.metaDescription||'').trim(),'Meta description'],
+            [!!(form.seoFaqText||'').trim(),'Q&A'],
+            [!!(form.description||form.bodyText||form.summary),'Helpful content']
+          ].filter(x=>x[0]).length}/5 completed</p>
+        </section>
         <div className='admin-form-grid'><Field label='Price text'><input value={form.price||''} onChange={e=>set('price',e.target.value)}/></Field><Field label='Duration'><input value={form.duration||''} onChange={e=>set('duration',e.target.value)}/></Field></div>
         <Field label='Service items' hint='One item per line'><textarea rows={6} value={arrText(form.items)} onChange={e=>set('items',lines(e.target.value))}/></Field>
         <ImageUpload label='Main service image' current={form.heroImage} onUploaded={img=>set('heroImage',img)}/><MultiImageUpload label='Service gallery' current={form.gallery||[]} max={8} onUploaded={imgs=>set('gallery',imgs)}/>
@@ -211,6 +233,24 @@ function Editor({
         <ImageUpload label='Featured image' current={form.featuredImage} onUploaded={img=>set('featuredImage',img)}/>
         <Field label='SEO title'><input value={form.seoTitle||''} onChange={e=>set('seoTitle',e.target.value)}/></Field>
         <Field label='Meta description'><textarea rows={3} value={form.metaDescription||''} onChange={e=>set('metaDescription',e.target.value)}/></Field>
+        {/* PINKSKY_PHASE3_SEO: extended blog optimization */}
+        <section style={{border:'1px solid #ead9e2',borderRadius:16,padding:18,margin:'20px 0',background:'#fff8fb'}}>
+          <h3>SEO · AEO · GEO Article Checklist</h3>
+          <Field label='Primary keyword'><input value={form.seoKeyword||''} onChange={e=>set('seoKeyword',e.target.value)} placeholder='Example: skincare routine in Nigeria'/></Field>
+          <Field label='Reader questions and concise answers' hint='One per line: Question | Answer. Only publish answers that are factually supported.'><textarea rows={6} value={form.seoFaqText||''} onChange={e=>set('seoFaqText',e.target.value)}/></Field>
+          <Field label='Author name'><input value={form.authorName||''} onChange={e=>set('authorName',e.target.value)}/></Field>
+          <p style={{fontSize:13,color:'#67545e'}}>Write original, helpful content. Verify health-related claims and use trustworthy sources. These checks do not guarantee ranking.</p>
+          <div style={{border:'1px solid #ddd',borderRadius:10,padding:14,background:'white'}}>
+            <strong style={{display:'block',color:'#2359a4'}}>{form.seoTitle||form.title||'Article title'} — Pinksky</strong>
+            <small style={{color:'#17714b'}}>pinkskybeauty.com/article/{typeof form.slug==='string'?form.slug:form.slug?.current||'your-slug'}</small>
+            <p style={{fontSize:13,marginBottom:0}}>{form.metaDescription||'Write a unique description for this article.'}</p>
+          </div>
+          <p style={{fontSize:13}}><strong>Editorial readiness:</strong> {[
+            !!(form.seoKeyword||'').trim(), !!(form.seoTitle||'').trim(),
+            !!(form.metaDescription||'').trim(), !!(form.seoFaqText||'').trim(),
+            !!(form.authorName||'').trim(), !!(form.bodyText||form.body)
+          ].filter(Boolean).length}/6 checks met</p>
+        </section>
         <div className='admin-form-grid'><Field label='Published at'><input type='datetime-local' value={form.publishedAt?String(form.publishedAt).slice(0,16):''} onChange={e=>set('publishedAt',e.target.value?new Date(e.target.value).toISOString():undefined)}/></Field><Toggle label='Published' checked={form.published!==false} onChange={v=>set('published',v)}/></div>
       </>}
 
