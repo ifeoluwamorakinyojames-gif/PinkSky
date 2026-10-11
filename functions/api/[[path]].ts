@@ -189,11 +189,11 @@ export const onRequest = async (context: Ctx) => {
 
   try {
     await ensureSchema(env)
-
+if (path === '/api/bookings' && method === 'POST') {
 if (path === '/api/content' && method === 'GET') {
   const client = sanity(env, false)
 
-  const [
+  const results[
     services,
     banners,
     articles,
@@ -202,7 +202,7 @@ if (path === '/api/content' && method === 'GET') {
     settings,
     programs,
     reviews
-  ] = await Promise.all([
+  ] = await Promise.allSettled([
     client.fetch(`*[_type == "service" && published == true] | order(order asc, name asc) {
   _id,
   name,
@@ -268,6 +268,46 @@ if (path === '/api/content' && method === 'GET') {
         _id, customerName, text, rating, source
       }`)
   ])
+const names = [
+  'services',
+  'banners',
+  'articles',
+  'products',
+  'locations',
+  'settings',
+  'programs',
+  'reviews'
+]
+
+results.forEach((result, index) => {
+  if (result.status === 'rejected') {
+    console.error(`Sanity ${names[index]} query failed`, result.reason)
+  }
+})
+
+const getResult = <T,>(index: number, fallback: T): T => {
+  const result = results[index]
+  return result.status === 'fulfilled'
+    ? result.value as T
+    : fallback
+}
+
+// Services are essential: report failures instead of hiding them.
+if (results[0].status === 'rejected') {
+  return json({
+    error: 'Unable to load published services',
+    code: 'SERVICES_QUERY_FAILED'
+  }, 503)
+}
+
+const services = getResult<any[]>(0, [])
+const banners = getResult<any[]>(1, [])
+const articles = getResult<any[]>(2, [])
+const products = getResult<any[]>(3, [])
+const locations = getResult<any[]>(4, [])
+const settings = getResult<Record<string, unknown>>(5, {})
+const programs = getResult<any[]>(6, [])
+const reviews = getResult<any[]>(7, [])
 
   return json({
     services,

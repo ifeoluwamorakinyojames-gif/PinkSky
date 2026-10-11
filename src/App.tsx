@@ -287,6 +287,26 @@ export default function App() {
 
   const [bookingOpen, setBookingOpen] = useState(false)
   const [bookingResult, setBookingResult] = useState('')
+  useEffect(() => {
+  const trackPage = () => {
+    const gtag = (window as any).gtag
+
+    if (typeof gtag === 'function') {
+      gtag('event', 'page_view', {
+        page_title: document.title,
+        page_location: window.location.href,
+        page_path: window.location.pathname,
+      })
+    }
+  }
+
+  trackPage()
+  window.addEventListener('popstate', trackPage)
+
+  return () => {
+    window.removeEventListener('popstate', trackPage)
+  }
+}, [])
   const [bookingError, setBookingError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
