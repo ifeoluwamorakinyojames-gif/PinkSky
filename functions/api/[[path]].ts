@@ -178,7 +178,7 @@ const resourceMap: Record<string,string> = {
 }
 
 async function parseJson(request: Request) {
-  try { return await request.json<any>() } catch { return {} }
+  try { return await request.json() } catch { return {} }
 }
 
 export const onRequest = async (context: Ctx) => {
@@ -189,20 +189,10 @@ export const onRequest = async (context: Ctx) => {
 
   try {
     await ensureSchema(env)
-if (path === '/api/bookings' && method === 'POST') {
 if (path === '/api/content' && method === 'GET') {
   const client = sanity(env, false)
 
-  const results[
-    services,
-    banners,
-    articles,
-    products,
-    locations,
-    settings,
-    programs,
-    reviews
-  ] = await Promise.allSettled([
+  const results = await Promise.allSettled([
     client.fetch(`*[_type == "service" && published == true] | order(order asc, name asc) {
   _id,
   name,
