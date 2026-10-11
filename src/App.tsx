@@ -84,6 +84,23 @@ type Product = {
   images?: string[]
 }
 
+// Use a price only when Sanity has a valid positive numeric value.
+function pinkskyPrice(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') return null
+  const parsed = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
+}
+
+function PinkskyProductPrice({product}: {product: Product}) {
+  const sale = pinkskyPrice(product.salePrice)
+  const regular = pinkskyPrice(product.regularPrice)
+  const price = sale ?? regular
+  return <span className='pinksky-product-price'>{price === null
+    ? 'Contact for price'
+    : new Intl.NumberFormat('en-NG', {style: 'currency', currency: 'NGN', maximumFractionDigits: 0}).format(price)}
+  </span>
+}
+
 type Location = {
   _id?: string
   name: string
@@ -1262,109 +1279,59 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   }
 
   if (product) {
+    const photos = (product.images || []).filter(Boolean)
+    const inStock = typeof product.stockQuantity === 'number' && product.stockQuantity > 0
     return (
       <div>
         {header}
-
-        <main className='content'>
-          <button
-            className='back'
-            onClick={() => go('shop')}
-          >
-            <ArrowLeft size={17} /> Beauty Shop
+        <main className='content pinksky-product-detail'>
+          <button className='back' onClick={() => go('shop')}>
+            <ArrowLeft size={17} /> Back to Beauty Shop
           </button>
-
-          <div className='detail-grid'>
-            <Img
-              src={
-                product.images?.[0] ||
-                './resources/pinksky-logo.jpg'
-              }
-              alt={product.name}
-              priority
-            />
-
-            <div>
-              <span className='eyebrow'>
-                {product.brand ||
-                  product.category ||
-                  'Pinksky Beauty Shop'}
-              </span>
-
+          <div className='pinksky-product-layout'>
+            <div className='pinksky-product-gallery'>
+              <Img src={photos[0] || '/resources/pinksky-logo.jpg'} alt={product.name} priority />
+              {photos.length > 1 && <div className='pinksky-product-thumbnails'>
+                {photos.slice(1, 5).map((photo, i) => <Img key={photo + i} src={photo} alt={`${product.name} — image ${i + 2}`} />)}
+              </div>}
+            </div>
+            <div className='pinksky-product-summary'>
+              <span className='eyebrow'>{product.brand || product.category || 'Pinksky Beauty Shop'}</span>
               <h1>{product.name}</h1>
-
-              <h2>
-                â‚¦
-                {Number(
-                  product.salePrice ??
-                    product.regularPrice ??
-                    0,
-                ).toLocaleString()}
-              </h2>
-
-              <p>
-                {product.shortDescription ||
-                  product.description}
-              </p>
-
-              <p>
-                {(product.stockQuantity || 0) > 0
-                  ? `In stock: ${product.stockQuantity}`
-                  : 'Out of stock / contact Pinksky'}
-              </p>
-
-              {whatsapp && (
-                <a
-                  className='primary'
-                  href={`${whatsapp}?text=${encodeURIComponent(
-                    'Hello Pinksky, I am interested in ' +
-                      product.name,
-                  )}`}
-                  target='_blank'
-                  rel='noreferrer'
-                >
-                  Order / ask on WhatsApp
-                </a>
-              )}
+              <h2><PinkskyProductPrice product={product} /></h2>
+              {product.shortDescription && <p className='pinksky-product-intro'>{product.shortDescription}</p>}
+              <p className='pinksky-product-stock'>{inStock ? `In stock: ${product.stockQuantity}` : 'Contact us to confirm availability'}</p>
+              {(product.size || product.sku || product.category) && <dl className='pinksky-product-facts'>
+                {product.size && <><dt>Size</dt><dd>{product.size}</dd></>}
+                {product.sku && <><dt>Product code</dt><dd>{product.sku}</dd></>}
+                {product.category && <><dt>Category</dt><dd>{product.category}</dd></>}
+              </dl>}
+              {whatsapp && <a className='primary pinksky-product-order'
+                href={`${whatsapp}?text=${encodeURIComponent('Hello Pinksky, I would like to enquire about ' + product.name + ' and confirm the current price and availability.')}`}
+                target='_blank' rel='noopener noreferrer'>
+                <MessageCircle size={18} /> Order / ask on WhatsApp
+              </a>}
             </div>
           </div>
-
-          <div className='product-info'>
-            {product.description && (
-              <article>
-                <h2>About</h2>
-                <p>{product.description}</p>
-              </article>
-            )}
-
-            {product.benefits?.length ? (
-              <article>
-                <h2>Benefits</h2>
-
-                {product.benefits.map(item => (
-                  <p key={item}>âœ“ {item}</p>
-                ))}
-              </article>
-            ) : null}
-
-            {product.ingredients && (
-              <article>
-                <h2>
-                  Ingredients / Specifications
-                </h2>
-                <p>{product.ingredients}</p>
-              </article>
-            )}
-
-            {product.howToUse && (
-              <article>
-                <h2>How to use</h2>
-                <p>{product.howToUse}</p>
-              </article>
-            )}
+          <div className='product-info pinksky-product-sections'>
+            {product.description && <article><h2>About this product</h2><p>{product.description}</p></article>}
+            {!!product.benefits?.length && <article><h2>Benefits</h2><ul className='pinksky-product-benefits'>
+              {product.benefits.map((item, i) => <li key={`${i}-${item}`}><Check size={18} aria-hidden='true' /><span>{item}</span></li>)}
+            </ul></article>}
+            {product.ingredients && <article><h2>Ingredients / specifications</h2><p>{product.ingredients}</p></article>}
+            {product.howToUse && <article><h2>How to use</h2><p>{product.howToUse}</p></article>}
           </div>
+          {products.filter(item => item.slug !== product.slug).length > 0 && <section className='pinksky-product-related'>
+            <h2>Explore more products</h2>
+            <div className='grid'>{products.filter(item => item.slug !== product.slug).slice(0, 3).map(item =>
+              <article className='card' key={item._id}>
+                <button type='button' className='pinksky-product-related-link' onClick={() => go('product/' + item.slug)}>
+                  <Img src={item.images?.[0] || '/resources/pinksky-logo.jpg'} alt={item.name} />
+                  <strong>{item.name}</strong><PinkskyProductPrice product={item} />
+                </button>
+              </article>)}</div>
+          </section>}
         </main>
-
         {footer}
         {bookingModal}
       </div>
@@ -1525,14 +1492,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   <div>
                     <h3>{item.name}</h3>
 
-                    <p>
-                      â‚¦
-                      {Number(
-                        item.salePrice ??
-                          item.regularPrice ??
-                          0,
-                      ).toLocaleString()}
-                    </p>
+                    <p><PinkskyProductPrice product={item} /></p>
                   </div>
                 </article>
               ))}
