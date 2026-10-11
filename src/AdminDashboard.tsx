@@ -170,6 +170,28 @@ function Editor({
     placeholder='Teeth Whitening in Warri, Delta State'
   />
 </Field>
+        {/* PINKSKY_PHASE3_SEO: editorial checks; no ranking guarantees */}
+        <section className='pinksky-seo-panel' style={{border:'1px solid #ead9e2',borderRadius:16,padding:18,margin:'20px 0',background:'#fff8fb'}}>
+          <h3 style={{marginTop:0}}>SEO · AEO · GEO Optimization</h3>
+          <p style={{fontSize:13,color:'#67545e'}}>Improve clarity for customers, search engines and answer systems. Rankings and rich results are not guaranteed.</p>
+          <Field label='Primary search keyword' hint='Example: teeth whitening in Warri'><input value={form.seoKeyword||''} onChange={e=>set('seoKeyword',e.target.value)} placeholder='Main phrase people search for'/></Field>
+          <Field label='Search intent'><select value={form.seoIntent||'Local intent'} onChange={e=>set('seoIntent',e.target.value)}><option>Local intent</option><option>Informational intent</option><option>Commercial investigation</option><option>Transactional intent</option></select></Field>
+          <Field label='SEO title'><input maxLength={120} value={form.seoTitle||''} onChange={e=>set('seoTitle',e.target.value)}/></Field>
+          <Field label='Meta description'><textarea rows={3} maxLength={320} value={form.metaDescription||''} onChange={e=>set('metaDescription',e.target.value)}/></Field>
+          <Field label='Frequently asked questions' hint='Write one question and answer per line, separated with |. Example: How do I book? | Select a branch and contact us on WhatsApp.'><textarea rows={5} value={form.seoFaqText||''} onChange={e=>set('seoFaqText',e.target.value)}/></Field>
+          <div style={{border:'1px solid #ddd',borderRadius:10,padding:14,background:'white',marginTop:14}}>
+            <strong style={{display:'block',color:'#2359a4'}}>{form.seoTitle||form.name||form.title||'Page title'} — Pinksky</strong>
+            <small style={{color:'#17714b'}}>pinkskybeauty.com/{section==='services'?'service':'article'}/{typeof form.slug==='string'?form.slug:form.slug?.current||'your-slug'}</small>
+            <p style={{fontSize:13,marginBottom:0}}>{form.metaDescription||'Add a unique, helpful meta description to preview your page.'}</p>
+          </div>
+          <p style={{fontSize:13}}><strong>Content checklist:</strong> {[
+            [!!(form.seoKeyword||'').trim(),'Keyword'],
+            [!!(form.seoTitle||'').trim(),'SEO title'],
+            [!!(form.metaDescription||'').trim(),'Meta description'],
+            [!!(form.seoFaqText||'').trim(),'Q&A'],
+            [!!(form.description||form.bodyText||form.summary),'Helpful content']
+          ].filter(x=>x[0]).length}/5 completed</p>
+        </section>
         <div className='admin-form-grid'><Field label='Price text'><input value={form.price||''} onChange={e=>set('price',e.target.value)}/></Field><Field label='Duration'><input value={form.duration||''} onChange={e=>set('duration',e.target.value)}/></Field></div>
         <Field label='Service items' hint='One item per line'><textarea rows={6} value={arrText(form.items)} onChange={e=>set('items',lines(e.target.value))}/></Field>
         <ImageUpload label='Main service image' current={form.heroImage} onUploaded={img=>set('heroImage',img)}/><MultiImageUpload label='Service gallery' current={form.gallery||[]} max={8} onUploaded={imgs=>set('gallery',imgs)}/>
@@ -177,7 +199,7 @@ function Editor({
       </>}
 
       {section==='products' && <>
-        <div className='admin-form-grid'><Field label='Product name'><input value={form.name||''} onChange={e=>set('name',e.target.value)}/></Field><Field label='Brand'><input value={form.brand||'Pink Sky'} onChange={e=>set('brand',e.target.value)}/></Field></div>
+        <div className='admin-form-grid'><Field label='Product name'><input value={form.name||''} onChange={e=>set('name',e.target.value)}/></Field><Field label='Brand'><input value={form.brand||'Pinksky'} onChange={e=>set('brand',e.target.value)}/></Field></div>
         <div className='admin-form-grid'><Field label='Slug'><input value={form.slug?.current||form.slug||''} onChange={e=>set('slug',e.target.value)}/></Field><Field label='Category'><input value={form.category||''} onChange={e=>set('category',e.target.value)}/></Field></div>
         <div className='admin-form-grid'><Field label='Regular price (NGN)'><input type='number' min='0' value={form.regularPrice??''} onChange={e=>set('regularPrice',e.target.value===''?undefined:Number(e.target.value))}/></Field><Field label='Sale price (NGN)'><input type='number' min='0' value={form.salePrice??''} onChange={e=>set('salePrice',e.target.value===''?undefined:Number(e.target.value))}/></Field></div>
         <div className='admin-form-grid'><Field label='Stock quantity'><input type='number' min='0' value={form.stockQuantity??0} onChange={e=>set('stockQuantity',Number(e.target.value))}/></Field><Field label='Size / Volume'><input value={form.size||''} onChange={e=>set('size',e.target.value)}/></Field></div>
@@ -211,6 +233,24 @@ function Editor({
         <ImageUpload label='Featured image' current={form.featuredImage} onUploaded={img=>set('featuredImage',img)}/>
         <Field label='SEO title'><input value={form.seoTitle||''} onChange={e=>set('seoTitle',e.target.value)}/></Field>
         <Field label='Meta description'><textarea rows={3} value={form.metaDescription||''} onChange={e=>set('metaDescription',e.target.value)}/></Field>
+        {/* PINKSKY_PHASE3_SEO: extended blog optimization */}
+        <section style={{border:'1px solid #ead9e2',borderRadius:16,padding:18,margin:'20px 0',background:'#fff8fb'}}>
+          <h3>SEO · AEO · GEO Article Checklist</h3>
+          <Field label='Primary keyword'><input value={form.seoKeyword||''} onChange={e=>set('seoKeyword',e.target.value)} placeholder='Example: skincare routine in Nigeria'/></Field>
+          <Field label='Reader questions and concise answers' hint='One per line: Question | Answer. Only publish answers that are factually supported.'><textarea rows={6} value={form.seoFaqText||''} onChange={e=>set('seoFaqText',e.target.value)}/></Field>
+          <Field label='Author name'><input value={form.authorName||''} onChange={e=>set('authorName',e.target.value)}/></Field>
+          <p style={{fontSize:13,color:'#67545e'}}>Write original, helpful content. Verify health-related claims and use trustworthy sources. These checks do not guarantee ranking.</p>
+          <div style={{border:'1px solid #ddd',borderRadius:10,padding:14,background:'white'}}>
+            <strong style={{display:'block',color:'#2359a4'}}>{form.seoTitle||form.title||'Article title'} — Pinksky</strong>
+            <small style={{color:'#17714b'}}>pinkskybeauty.com/article/{typeof form.slug==='string'?form.slug:form.slug?.current||'your-slug'}</small>
+            <p style={{fontSize:13,marginBottom:0}}>{form.metaDescription||'Write a unique description for this article.'}</p>
+          </div>
+          <p style={{fontSize:13}}><strong>Editorial readiness:</strong> {[
+            !!(form.seoKeyword||'').trim(), !!(form.seoTitle||'').trim(),
+            !!(form.metaDescription||'').trim(), !!(form.seoFaqText||'').trim(),
+            !!(form.authorName||'').trim(), !!(form.bodyText||form.body)
+          ].filter(Boolean).length}/6 checks met</p>
+        </section>
         <div className='admin-form-grid'><Field label='Published at'><input type='datetime-local' value={form.publishedAt?String(form.publishedAt).slice(0,16):''} onChange={e=>set('publishedAt',e.target.value?new Date(e.target.value).toISOString():undefined)}/></Field><Toggle label='Published' checked={form.published!==false} onChange={v=>set('published',v)}/></div>
       </>}
 
@@ -326,18 +366,18 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
   }
   async function logout(){try{await adminApi.logout()}finally{setSession({authenticated:false});setSection('dashboard')}}
 
-  if(session===null)return <div className='admin-auth-shell'><div className='admin-login-card loading-card'><Loader2 className='spin'/><p>Checking Pink Sky admin session…</p></div></div>
+  if(session===null)return <div className='admin-auth-shell'><div className='admin-login-card loading-card'><Loader2 className='spin'/><p>Checking Pinksky admin session…</p></div></div>
 
   if(!session.authenticated)return <div className='admin-auth-shell'>
     <div className='admin-login-brand'>
-      <img src='./resources/pinksky-logo.jpg' alt='Pink Sky'/>
-      <span>Pink Sky Beauty & Wellness</span><h1>Staff Administration</h1>
+      <img src='./resources/pinksky-logo.jpg' alt='Pinksky'/>
+      <span>Pinksky Beauty & Wellness</span><h1>Staff Administration</h1>
       <p>Manage services, products, bookings, banners and website content from one secure workspace.</p>
       <button className='admin-link-button' onClick={onExit}><ArrowLeft size={17}/> Back to website</button>
     </div>
     <form className='admin-login-card' onSubmit={submitLogin}>
       <div className='admin-lock'><LockKeyhole/></div><span className='admin-kicker'>Authorised staff only</span>
-      <h2>Sign in to Pink Sky Admin</h2><p className='admin-muted'>Use the staff account assigned to you by a Pink Sky owner.</p>
+      <h2>Sign in to Pinksky Admin</h2><p className='admin-muted'>Use the staff account assigned to you by a Pinksky owner.</p>
       <Field label='Email address'><input type='email' required autoComplete='username' value={email} onChange={e=>setEmail(e.target.value)}/></Field>
       <Field label='Password'><input type='password' required autoComplete='current-password' value={password} onChange={e=>setPassword(e.target.value)}/></Field>
       {loginError&&<div className='admin-error'>{loginError}</div>}
@@ -350,13 +390,13 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
   const meta=sectionMeta[section]
   return <div className='admin-shell'>
     <aside className={`admin-sidebar ${mobileOpen?'open':''}`}>
-      <div className='admin-sidebar-brand'><img src='./resources/pinksky-logo.jpg' alt='Pink Sky'/><div><strong>Pink Sky</strong><span>Administration</span></div><button className='admin-mobile-close' onClick={()=>setMobileOpen(false)}><X/></button></div>
+      <div className='admin-sidebar-brand'><img src='./resources/pinksky-logo.jpg' alt='Pinksky'/><div><strong>Pinksky</strong><span>Administration</span></div><button className='admin-mobile-close' onClick={()=>setMobileOpen(false)}><X/></button></div>
       <nav className='admin-nav'>{visibleSections.map(key=>{const item=sectionMeta[key],I=item.icon;return <button key={key} className={section===key?'active':''} onClick={()=>{setSection(key);setMobileOpen(false)}}><I size={18}/>{item.label}</button>})}</nav>
       <div className='admin-sidebar-bottom'><button onClick={onExit}><ArrowLeft size={17}/> View website</button><button onClick={logout}><LogOut size={17}/> Sign out</button></div>
     </aside>
 
     <main className='admin-main'>
-      <header className='admin-topbar'><button className='admin-menu' onClick={()=>setMobileOpen(true)}><Menu/></button><div><span className='admin-kicker'>Pink Sky Admin</span><h1>{meta.label}</h1></div><div className='admin-user-chip'><span>{user.name||user.email}</span><strong>{roleLabel(user.role)}</strong></div></header>
+      <header className='admin-topbar'><button className='admin-menu' onClick={()=>setMobileOpen(true)}><Menu/></button><div><span className='admin-kicker'>Pinksky Admin</span><h1>{meta.label}</h1></div><div className='admin-user-chip'><span>{user.name||user.email}</span><strong>{roleLabel(user.role)}</strong></div></header>
 
       {section==='dashboard'?<section className='admin-dashboard-home'>
         <div className='admin-welcome-card'><div><span className='admin-kicker'>Welcome back</span><h2>{user.name||user.email}</h2><p>Manage the website from this dashboard. Sanity remains behind the scenes.</p></div><ShieldCheck size={48}/></div>
@@ -367,7 +407,7 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
         </div>
         {loading&&<div className='admin-state'><Loader2 className='spin'/> Loading…</div>}
         {loadError&&<div className='admin-error admin-page-error'>{loadError}</div>}
-        {!loading&&!loadError&&section==='settings'&&items.length===0&&<button className='admin-primary' onClick={()=>setSelected({_new:true,businessName:'Pink Sky Beauty & Wellness',tagline:'Beauty from within.'})}>Create website settings</button>}
+        {!loading&&!loadError&&section==='settings'&&items.length===0&&<button className='admin-primary' onClick={()=>setSelected({_new:true,businessName:'Pinksky Beauty & Wellness',tagline:'Beauty from within.'})}>Create website settings</button>}
         {!loading&&!loadError&&section!=='settings'&&<div className='admin-table-wrap'><table className='admin-table'><thead><tr><th>Name / Title</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>
           {items.length===0?<tr><td colSpan={4} className='admin-empty'>No records yet.</td></tr>:items.map((item,index)=><tr key={item._id||item.id||index}><td><strong>{item.name||item.title||item.customerName||item.email||'Untitled'}</strong><span>{item.slug?.current||item.service||item.role||''}</span></td><td><span className='admin-status'>{item.status||(item.published===false?'Hidden':'Published')}</span></td><td>{item._updatedAt?new Date(item._updatedAt).toLocaleDateString():'—'}</td><td><button className='admin-text-button' onClick={()=>setSelected(item)}>{canWrite(user.role)?'Edit':'View'}</button></td></tr>)}
         </tbody></table></div>}

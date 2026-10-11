@@ -1,4 +1,4 @@
-﻿import {useEffect, useMemo, useState, type FormEvent} from 'react'
+import {useEffect, useMemo, useState, type FormEvent} from 'react'
 import {PortableText} from '@portabletext/react'
 import AdminDashboard from './AdminDashboard'
 import {
@@ -28,6 +28,8 @@ type Service = {
   gallery?: string[]
 
   seoKeyword?: string
+  seoIntent?: string
+  seoFaqText?: string
   seoHeading?: string
   seoTitle?: string
   metaDescription?: string
@@ -57,6 +59,10 @@ type Article = {
   image?: string
   seoTitle?: string
   metaDescription?: string
+  seoKeyword?: string
+  seoFaqText?: string
+  authorName?: string
+  publishedAt?: string
 }
 
 type Product = {
@@ -76,6 +82,23 @@ type Product = {
   ingredients?: string
   howToUse?: string
   images?: string[]
+}
+
+// Use a price only when Sanity has a valid positive numeric value.
+function pinkskyPrice(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') return null
+  const parsed = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
+}
+
+function PinkskyProductPrice({product}: {product: Product}) {
+  const sale = pinkskyPrice(product.salePrice)
+  const regular = pinkskyPrice(product.regularPrice)
+  const price = sale ?? regular
+  return <span className='pinksky-product-price'>{price === null
+    ? 'Contact for price'
+    : new Intl.NumberFormat('en-NG', {style: 'currency', currency: 'NGN', maximumFractionDigits: 0}).format(price)}
+  </span>
 }
 
 type Location = {
@@ -117,6 +140,22 @@ type Settings = {
   seoTitle?: string
   metaDescription?: string
   logo?: string
+}
+
+// PINKSKY_PHASE3B: FAQs are shown to readers and only then described in JSON-LD.
+function seoFaqs(value?: string) {
+  return (value || '').split('\n').map(line => {
+    const at = line.indexOf('|')
+    return at < 0 ? null : {question: line.slice(0,at).trim(), answer: line.slice(at+1).trim()}
+  }).filter((item): item is {question:string;answer:string} => !!item && !!item.question && !!item.answer).slice(0,12)
+}
+
+function SeoFaqSection({value}: {value?: string}) {
+  const faqs = seoFaqs(value)
+  return faqs.length ? <section className='pinksky-seo-faqs' aria-label='Frequently asked questions'>
+    <h2>Frequently asked questions</h2>
+    {faqs.map((faq,i) => <details key={i}><summary>{faq.question}</summary><p>{faq.answer}</p></details>)}
+  </section> : null
 }
 
 function routeValue() {
@@ -193,7 +232,7 @@ function BannerCarousel({banners}: {banners: Banner[]}) {
   const node = (
     <img
       src={image}
-      alt={banner.alt || banner.title || 'Pink Sky promotion'}
+      alt={banner.alt || banner.title || 'Pinksky promotion'}
       loading='eager'
       decoding='async'
       fetchPriority='high'
@@ -242,7 +281,7 @@ function serviceWhatsAppUrl(
   branch: (typeof pinkSkyBranches)[number],
 ) {
   const message =
-    `Hello Pink Sky, I would like to book ${serviceName} at your ` +
+    `Hello Pinksky, I would like to book ${serviceName} at your ` +
     `${branch.name} branch. Please send me the available times, ` +
     `price and booking details. Thank you.`
 
@@ -287,6 +326,26 @@ export default function App() {
 
   const [bookingOpen, setBookingOpen] = useState(false)
   const [bookingResult, setBookingResult] = useState('')
+  useEffect(() => {
+  const trackPage = () => {
+    const gtag = (window as any).gtag
+
+    if (typeof gtag === 'function') {
+      gtag('event', 'page_view', {
+        page_title: document.title,
+        page_location: window.location.href,
+        page_path: window.location.pathname,
+      })
+    }
+  }
+
+  trackPage()
+  window.addEventListener('popstate', trackPage)
+
+  return () => {
+    window.removeEventListener('popstate', trackPage)
+  }
+}, [])
   const [bookingError, setBookingError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -332,7 +391,7 @@ export default function App() {
           _id: banner._id,
           title: banner.title,
           src: banner.src || banner.image || banner.imageUrl,
-          alt: banner.alt || banner.title || 'Pink Sky promotion',
+          alt: banner.alt || banner.title || 'Pinksky promotion',
           link: banner.link,
           order: banner.order ?? 100,
           active: banner.active,
@@ -440,27 +499,27 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       : undefined
 
   useEffect(() => {
-  const siteName = 'Pink Sky Beauty & Wellness'
+  const siteName = 'Pinksky Beauty & Wellness'
   const siteUrl = 'https://pinkskybeauty.com'
 
   const title = service
     ? service.seoTitle ||
-      `${service.name} in Warri & Effurun | Pink Sky`
+      `${service.name} in Warri & Effurun | Pinksky`
     : product
-      ? `${product.name} | Pink Sky Beauty Shop`
+      ? `${product.name} | Pinksky Beauty Shop`
       : article
-        ? `${article.seoTitle || article.title} | Pink Sky`
+        ? `${article.seoTitle || article.title} | Pinksky`
         : settings.seoTitle ||
-          'Pink Sky Beauty & Wellness | Warri & Effurun'
+          'Pinksky Beauty & Wellness | Warri & Effurun'
 
   const description = service
     ? service.metaDescription ||
       service.short ||
       service.description ||
-      `${service.name} at Pink Sky Beauty & Wellness in Warri and Effurun, Delta State.`
+      `${service.name} at Pinksky Beauty & Wellness in Warri and Effurun, Delta State.`
     : article?.metaDescription ||
       settings.metaDescription ||
-      'Pink Sky Beauty & Wellness in Warri and Effurun, Delta State.'
+      'Pinksky Beauty & Wellness in Warri and Effurun, Delta State.'
 
   document.title = title
 
@@ -557,6 +616,63 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
     description,
   )
 
+  // Organization logo and blog metadata for search engines.
+  document.getElementById('pinksky-brand-schema')?.remove()
+  if (settings.logo) {
+    const brandSchema = document.createElement('script')
+    brandSchema.id = 'pinksky-brand-schema'
+    brandSchema.type = 'application/ld+json'
+    brandSchema.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      '@id': siteUrl + '/#organization',
+      name: siteName,
+      url: siteUrl,
+      logo: settings.logo,
+      ...(settings.instagram ? {sameAs: [settings.instagram]} : {}),
+    })
+    document.head.appendChild(brandSchema)
+  }
+
+  document.getElementById('pinksky-article-schema')?.remove()
+  if (article) {
+    const articleSchema = document.createElement('script')
+    articleSchema.id = 'pinksky-article-schema'
+    articleSchema.type = 'application/ld+json'
+    articleSchema.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: article.title,
+      description,
+      ...(article.authorName ? {author: {'@type':'Person',name:article.authorName}} : {}),
+      ...(article.publishedAt ? {datePublished:article.publishedAt} : {}),
+      mainEntityOfPage: canonicalUrl,
+      url: canonicalUrl,
+      ...(article.image ? {image: article.image} : {}),
+      publisher: {
+        '@type': 'Organization',
+        name: siteName,
+        url: siteUrl,
+        ...(settings.logo ? {logo: {'@type': 'ImageObject', url: settings.logo}} : {}),
+      },
+    })
+    document.head.appendChild(articleSchema)
+  }
+
+  document.getElementById('pinksky-faq-schema')?.remove()
+  const pageFaqs = seoFaqs(service?.seoFaqText || article?.seoFaqText)
+  if (pageFaqs.length) {
+    const faqScript = document.createElement('script')
+    faqScript.id = 'pinksky-faq-schema'
+    faqScript.type = 'application/ld+json'
+    faqScript.textContent = JSON.stringify({
+      '@context':'https://schema.org', '@type':'FAQPage',
+      mainEntity:pageFaqs.map(faq => ({'@type':'Question',name:faq.question,
+        acceptedAnswer:{'@type':'Answer',text:faq.answer}}))
+    })
+    document.head.appendChild(faqScript)
+  }
+
   const oldSchema = document.getElementById(
     'pinksky-service-schema',
   )
@@ -600,6 +716,9 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
     document
       .getElementById('pinksky-service-schema')
       ?.remove()
+    document.getElementById('pinksky-brand-schema')?.remove()
+    document.getElementById('pinksky-article-schema')?.remove()
+    document.getElementById('pinksky-faq-schema')?.remove()
   }
 }, [service, product, article, settings])
 
@@ -635,7 +754,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
     }
 
     const selected = window.confirm(
-      'Choose your closest Pink Sky branch:\n\nOK - Airport Road, Warri\nCancel - Delta Mall, Effurun',
+      'Choose your closest Pinksky branch:\n\nOK - Airport Road, Warri\nCancel - Delta Mall, Effurun',
     )
 
     const branch = selected
@@ -686,7 +805,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   const header = (
     <>
       <div className='announcement'>
-        Two Pink Sky locations in Warri & Effurun
+        Two Pinksky locations in Warri & Effurun
       </div>
 
       <header>
@@ -699,7 +818,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
               settings.logo ||
               './resources/pinksky-logo.jpg'
             }
-            alt='Pink Sky'
+            alt='Pinksky'
           />
         </button>
 
@@ -778,7 +897,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           settings.logo ||
           './resources/pinksky-logo.jpg'
         }
-        alt='Pink Sky'
+        alt='Pinksky'
       />
 
       <p>
@@ -814,7 +933,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
         {!bookingResult ? (
           <>
             <span className='eyebrow'>
-              Book Pink Sky
+              Book Pinksky
             </span>
 
             <h2>Request an appointment</h2>
@@ -990,14 +1109,14 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             <p>
               Your booking reference is{' '}
               <strong>{bookingResult}</strong>.
-              Pink Sky will confirm availability.
+              Pinksky will confirm availability.
             </p>
 
             {whatsapp && (
               <a
                 className='primary'
                 href={`${whatsapp}?text=${encodeURIComponent(
-                  `Hello Pink Sky, I submitted a booking request. Ref: ${bookingResult}`,
+                  `Hello Pinksky, I submitted a booking request. Ref: ${bookingResult}`,
                 )}`}
                 target='_blank'
                 rel='noreferrer'
@@ -1019,7 +1138,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
         {header}
 
         <main className='content'>
-          <p>Loading Pink Sky...</p>
+          <p>Loading Pinksky...</p>
         </main>
 
         {footer}
@@ -1032,7 +1151,12 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
         {header}
 
         <main>
-          <section className='detail-hero'>
+          <section className='detail-hero pinksky-service-page'>
+            <div className='pinksky-breadcrumb'>
+              <button onClick={() => go()}>Home</button><span>/</span>
+              <button onClick={() => go('services')}>Services</button><span>/</span>
+              <span>{service.name}</span>
+            </div>
             <button
               className='back'
               onClick={() => go('services')}
@@ -1040,7 +1164,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
               <ArrowLeft size={17} /> All services
             </button>
 
-            <div className='detail-grid'>
+            <div className='detail-grid pinksky-product-layout'>
               <Img
                 src={
                   service.image ||
@@ -1058,6 +1182,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                 )}
 
                 <h1>{service.seoHeading || service.name}</h1>
+                {service.short && <p className='pinksky-service-intro'>{service.short}</p>}
 
                 {service.description && (
                   <p>{service.description}</p>
@@ -1091,7 +1216,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
 
                 <div className='service-booking'>
                   <strong>
-                    Choose the Pink Sky branch closest to you:
+                    Choose the Pinksky branch closest to you:
                   </strong>
 
                   <ServiceWhatsAppLinks
@@ -1114,7 +1239,37 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   ))}
               </div>
             ) : null}
+            <section className='pinksky-service-info'>
+              <h2>About {service.name}</h2>
+              <p>{service.description || service.short || `Contact Pinksky to learn about ${service.name}, availability and service details.`}</p>
+              {service.items?.length ? <><h3>Service options and highlights</h3>
+                <ul>{service.items.map(item => <li key={item}>{item}</li>)}</ul></> : null}
+              <SeoFaqSection value={service.seoFaqText}/>
+              <h3>Book at your preferred Pinksky branch</h3>
+              <p>Contact our team to confirm pricing, availability and appointment details.</p>
+              <ServiceWhatsAppLinks serviceName={service.name}/>
+            </section>
           </section>
+          {services.some(item => item.slug !== service.slug) && (
+            <section className='pinksky-related-services'>
+              <div className='pinksky-related-heading'>
+                <h2>Explore more Pinksky services</h2>
+                <button className='secondary' onClick={() => go('services')}>All services <ArrowRight size={16}/></button>
+              </div>
+              <div className='pinksky-related-grid'>
+                {services.filter(item => item.slug !== service.slug).slice(0,3).map(item => (
+                  <article className='pinksky-related-card' key={item.slug}>
+                    <button onClick={() => go('service/' + item.slug)}>
+                      <Img src={item.image || '/resources/pinksky-logo.jpg'} alt={item.name}/>
+                      <span>{item.name}</span>
+                      {item.short && <small>{item.short}</small>}
+                      <strong>View service <ArrowRight size={16}/></strong>
+                    </button>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
         </main>
 
         {footer}
@@ -1124,109 +1279,59 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   }
 
   if (product) {
+    const photos = (product.images || []).filter(Boolean)
+    const inStock = typeof product.stockQuantity === 'number' && product.stockQuantity > 0
     return (
       <div>
         {header}
-
-        <main className='content'>
-          <button
-            className='back'
-            onClick={() => go('shop')}
-          >
-            <ArrowLeft size={17} /> Beauty Shop
+        <main className='content pinksky-product-detail'>
+          <button className='back' onClick={() => go('shop')}>
+            <ArrowLeft size={17} /> Back to Beauty Shop
           </button>
-
-          <div className='detail-grid'>
-            <Img
-              src={
-                product.images?.[0] ||
-                './resources/pinksky-logo.jpg'
-              }
-              alt={product.name}
-              priority
-            />
-
-            <div>
-              <span className='eyebrow'>
-                {product.brand ||
-                  product.category ||
-                  'Pink Sky Beauty Shop'}
-              </span>
-
+          <div className='pinksky-product-layout'>
+            <div className='pinksky-product-gallery'>
+              <Img src={photos[0] || '/resources/pinksky-logo.jpg'} alt={product.name} priority />
+              {photos.length > 1 && <div className='pinksky-product-thumbnails'>
+                {photos.slice(1, 5).map((photo, i) => <Img key={photo + i} src={photo} alt={`${product.name} — image ${i + 2}`} />)}
+              </div>}
+            </div>
+            <div className='pinksky-product-summary'>
+              <span className='eyebrow'>{product.brand || product.category || 'Pinksky Beauty Shop'}</span>
               <h1>{product.name}</h1>
-
-              <h2>
-                â‚¦
-                {Number(
-                  product.salePrice ??
-                    product.regularPrice ??
-                    0,
-                ).toLocaleString()}
-              </h2>
-
-              <p>
-                {product.shortDescription ||
-                  product.description}
-              </p>
-
-              <p>
-                {(product.stockQuantity || 0) > 0
-                  ? `In stock: ${product.stockQuantity}`
-                  : 'Out of stock / contact Pink Sky'}
-              </p>
-
-              {whatsapp && (
-                <a
-                  className='primary'
-                  href={`${whatsapp}?text=${encodeURIComponent(
-                    'Hello Pink Sky, I am interested in ' +
-                      product.name,
-                  )}`}
-                  target='_blank'
-                  rel='noreferrer'
-                >
-                  Order / ask on WhatsApp
-                </a>
-              )}
+              <h2><PinkskyProductPrice product={product} /></h2>
+              {product.shortDescription && <p className='pinksky-product-intro'>{product.shortDescription}</p>}
+              <p className='pinksky-product-stock'>{inStock ? `In stock: ${product.stockQuantity}` : 'Contact us to confirm availability'}</p>
+              {(product.size || product.sku || product.category) && <dl className='pinksky-product-facts'>
+                {product.size && <><dt>Size</dt><dd>{product.size}</dd></>}
+                {product.sku && <><dt>Product code</dt><dd>{product.sku}</dd></>}
+                {product.category && <><dt>Category</dt><dd>{product.category}</dd></>}
+              </dl>}
+              {whatsapp && <a className='primary pinksky-product-order'
+                href={`${whatsapp}?text=${encodeURIComponent('Hello Pinksky, I would like to enquire about ' + product.name + ' and confirm the current price and availability.')}`}
+                target='_blank' rel='noopener noreferrer'>
+                <MessageCircle size={18} /> Order / ask on WhatsApp
+              </a>}
             </div>
           </div>
-
-          <div className='product-info'>
-            {product.description && (
-              <article>
-                <h2>About</h2>
-                <p>{product.description}</p>
-              </article>
-            )}
-
-            {product.benefits?.length ? (
-              <article>
-                <h2>Benefits</h2>
-
-                {product.benefits.map(item => (
-                  <p key={item}>âœ“ {item}</p>
-                ))}
-              </article>
-            ) : null}
-
-            {product.ingredients && (
-              <article>
-                <h2>
-                  Ingredients / Specifications
-                </h2>
-                <p>{product.ingredients}</p>
-              </article>
-            )}
-
-            {product.howToUse && (
-              <article>
-                <h2>How to use</h2>
-                <p>{product.howToUse}</p>
-              </article>
-            )}
+          <div className='product-info pinksky-product-sections'>
+            {product.description && <article><h2>About this product</h2><p>{product.description}</p></article>}
+            {!!product.benefits?.length && <article><h2>Benefits</h2><ul className='pinksky-product-benefits'>
+              {product.benefits.map((item, i) => <li key={`${i}-${item}`}><Check size={18} aria-hidden='true' /><span>{item}</span></li>)}
+            </ul></article>}
+            {product.ingredients && <article><h2>Ingredients / specifications</h2><p>{product.ingredients}</p></article>}
+            {product.howToUse && <article><h2>How to use</h2><p>{product.howToUse}</p></article>}
           </div>
+          {products.filter(item => item.slug !== product.slug).length > 0 && <section className='pinksky-product-related'>
+            <h2>Explore more products</h2>
+            <div className='grid'>{products.filter(item => item.slug !== product.slug).slice(0, 3).map(item =>
+              <article className='card' key={item._id}>
+                <button type='button' className='pinksky-product-related-link' onClick={() => go('product/' + item.slug)}>
+                  <Img src={item.images?.[0] || '/resources/pinksky-logo.jpg'} alt={item.name} />
+                  <strong>{item.name}</strong><PinkskyProductPrice product={item} />
+                </button>
+              </article>)}</div>
+          </section>}
         </main>
-
         {footer}
         {bookingModal}
       </div>
@@ -1253,6 +1358,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           )}
 
           <h1>{article.title}</h1>
+          {article.authorName && <p className='pinksky-byline'>By {article.authorName}</p>}
 
           {article.summary && (
             <p className='lead'>
@@ -1279,11 +1385,12 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             )}
           </div>
 
+          <SeoFaqSection value={article.seoFaqText}/>
           <button
             className='primary'
             onClick={() => openBooking()}
           >
-            Book a Pink Sky service
+            Book a Pinksky service
           </button>
         </main>
 
@@ -1300,7 +1407,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
 
         <main className='content'>
           <span className='eyebrow'>
-            Pink Sky services
+            Pinksky services
           </span>
 
           <h1>Find the service for you.</h1>
@@ -1311,10 +1418,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                 <article
                   className='card'
                   key={item._id || item.slug}
-                  onClick={() =>
-                    go('service/' + item.slug)
-                  }
-                >
+                                 >
                   <Img
                     src={
                       item.image ||
@@ -1330,7 +1434,10 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                       <p>{item.short}</p>
                     )}
 
-                    <button>
+                    <button
+  type='button'
+  onClick={() => go('service/' + item.slug)}
+>
   View service <ArrowRight size={15} />
 </button>
 
@@ -1359,7 +1466,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
 
         <main className='content'>
           <span className='eyebrow'>
-            Pink Sky Beauty Shop
+            Pinksky Beauty Shop
           </span>
 
           <h1>Take the glow home.</h1>
@@ -1385,14 +1492,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   <div>
                     <h3>{item.name}</h3>
 
-                    <p>
-                      â‚¦
-                      {Number(
-                        item.salePrice ??
-                          item.regularPrice ??
-                          0,
-                      ).toLocaleString()}
-                    </p>
+                    <p><PinkskyProductPrice product={item} /></p>
                   </div>
                 </article>
               ))}
@@ -1421,7 +1521,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             Beauty knowledge hub
           </span>
 
-          <h1>Helpful Pink Sky guides.</h1>
+          <h1>Helpful Pinksky guides.</h1>
 
           {articles.length ? (
             <div className='article-grid'>
@@ -1472,7 +1572,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             Our locations
           </span>
 
-          <h1>Visit Pink Sky.</h1>
+          <h1>Visit Pinksky.</h1>
 
           {locations.length ? (
             <div className='locations'>
@@ -1527,7 +1627,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
 
         <main className='content'>
           <span className='eyebrow'>
-            More ways to experience Pink Sky
+            More ways to experience Pinksky
           </span>
 
           <h1>
@@ -1589,12 +1689,12 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
         <section className='hero'>
           <div>
             <span className='eyebrow'>
-              Pink Sky Beauty & Wellness
+              Pinksky Beauty & Wellness
             </span>
 
             <h1>
               Your beauty journey starts with{' '}
-              <em>Pink Sky.</em>
+              <em>Pinksky.</em>
             </h1>
 
             <p>
@@ -1627,7 +1727,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
 
           <Img
             src='./resources/pinksky-home-banner.jpg'
-            alt='Pink Sky Beauty & Wellness'
+            alt='Pinksky Beauty & Wellness'
             priority
           />
         </section>
@@ -1638,7 +1738,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           </span>
 
           <h2>
-            Choose your next Pink Sky experience.
+            Choose your next Pinksky experience.
           </h2>
 
           {services.length ? (
