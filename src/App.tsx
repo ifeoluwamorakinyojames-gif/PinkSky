@@ -1095,7 +1095,12 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
         {header}
 
         <main>
-          <section className='detail-hero'>
+          <section className='detail-hero pinksky-service-page'>
+            <div className='pinksky-breadcrumb'>
+              <button onClick={() => go()}>Home</button><span>/</span>
+              <button onClick={() => go('services')}>Services</button><span>/</span>
+              <span>{service.name}</span>
+            </div>
             <button
               className='back'
               onClick={() => go('services')}
@@ -1103,7 +1108,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
               <ArrowLeft size={17} /> All services
             </button>
 
-            <div className='detail-grid'>
+            <div className='detail-grid pinksky-product-layout'>
               <Img
                 src={
                   service.image ||
@@ -1121,6 +1126,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                 )}
 
                 <h1>{service.seoHeading || service.name}</h1>
+                {service.short && <p className='pinksky-service-intro'>{service.short}</p>}
 
                 {service.description && (
                   <p>{service.description}</p>
@@ -1177,7 +1183,36 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   ))}
               </div>
             ) : null}
+            <section className='pinksky-service-info'>
+              <h2>About {service.name}</h2>
+              <p>{service.description || service.short || `Contact Pinksky to learn about ${service.name}, availability and service details.`}</p>
+              {service.items?.length ? <><h3>Service options and highlights</h3>
+                <ul>{service.items.map(item => <li key={item}>{item}</li>)}</ul></> : null}
+              <h3>Book at your preferred Pinksky branch</h3>
+              <p>Contact our team to confirm pricing, availability and appointment details.</p>
+              <ServiceWhatsAppLinks serviceName={service.name}/>
+            </section>
           </section>
+          {services.some(item => item.slug !== service.slug) && (
+            <section className='pinksky-related-services'>
+              <div className='pinksky-related-heading'>
+                <h2>Explore more Pinksky services</h2>
+                <button className='secondary' onClick={() => go('services')}>All services <ArrowRight size={16}/></button>
+              </div>
+              <div className='pinksky-related-grid'>
+                {services.filter(item => item.slug !== service.slug).slice(0,3).map(item => (
+                  <article className='pinksky-related-card' key={item.slug}>
+                    <button onClick={() => go('service/' + item.slug)}>
+                      <Img src={item.image || '/resources/pinksky-logo.jpg'} alt={item.name}/>
+                      <span>{item.name}</span>
+                      {item.short && <small>{item.short}</small>}
+                      <strong>View service <ArrowRight size={16}/></strong>
+                    </button>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
         </main>
 
         {footer}
