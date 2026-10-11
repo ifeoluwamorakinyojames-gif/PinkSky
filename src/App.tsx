@@ -28,6 +28,8 @@ type Service = {
   gallery?: string[]
 
   seoKeyword?: string
+  seoIntent?: string
+  seoFaqText?: string
   seoHeading?: string
   seoTitle?: string
   metaDescription?: string
@@ -57,6 +59,10 @@ type Article = {
   image?: string
   seoTitle?: string
   metaDescription?: string
+  seoKeyword?: string
+  seoFaqText?: string
+  authorName?: string
+  publishedAt?: string
 }
 
 type Product = {
@@ -117,6 +123,22 @@ type Settings = {
   seoTitle?: string
   metaDescription?: string
   logo?: string
+}
+
+// PINKSKY_PHASE3B: FAQs are shown to readers and only then described in JSON-LD.
+function seoFaqs(value?: string) {
+  return (value || '').split('\n').map(line => {
+    const at = line.indexOf('|')
+    return at < 0 ? null : {question: line.slice(0,at).trim(), answer: line.slice(at+1).trim()}
+  }).filter((item): item is {question:string;answer:string} => !!item && !!item.question && !!item.answer).slice(0,12)
+}
+
+function SeoFaqSection({value}: {value?: string}) {
+  const faqs = seoFaqs(value)
+  return faqs.length ? <section className='pinksky-seo-faqs' aria-label='Frequently asked questions'>
+    <h2>Frequently asked questions</h2>
+    {faqs.map((faq,i) => <details key={i}><summary>{faq.question}</summary><p>{faq.answer}</p></details>)}
+  </section> : null
 }
 
 function routeValue() {
@@ -605,6 +627,8 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       '@type': 'BlogPosting',
       headline: article.title,
       description,
+      ...(article.authorName ? {author: {'@type':'Person',name:article.authorName}} : {}),
+      ...(article.publishedAt ? {datePublished:article.publishedAt} : {}),
       mainEntityOfPage: canonicalUrl,
       url: canonicalUrl,
       ...(article.image ? {image: article.image} : {}),
@@ -616,6 +640,20 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       },
     })
     document.head.appendChild(articleSchema)
+  }
+
+  document.getElementById('pinksky-faq-schema')?.remove()
+  const pageFaqs = seoFaqs(service?.seoFaqText || article?.seoFaqText)
+  if (pageFaqs.length) {
+    const faqScript = document.createElement('script')
+    faqScript.id = 'pinksky-faq-schema'
+    faqScript.type = 'application/ld+json'
+    faqScript.textContent = JSON.stringify({
+      '@context':'https://schema.org', '@type':'FAQPage',
+      mainEntity:pageFaqs.map(faq => ({'@type':'Question',name:faq.question,
+        acceptedAnswer:{'@type':'Answer',text:faq.answer}}))
+    })
+    document.head.appendChild(faqScript)
   }
 
   const oldSchema = document.getElementById(
@@ -663,6 +701,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       ?.remove()
     document.getElementById('pinksky-brand-schema')?.remove()
     document.getElementById('pinksky-article-schema')?.remove()
+    document.getElementById('pinksky-faq-schema')?.remove()
   }
 }, [service, product, article, settings])
 
@@ -1188,6 +1227,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
               <p>{service.description || service.short || `Contact Pinksky to learn about ${service.name}, availability and service details.`}</p>
               {service.items?.length ? <><h3>Service options and highlights</h3>
                 <ul>{service.items.map(item => <li key={item}>{item}</li>)}</ul></> : null}
+              <SeoFaqSection value={service.seoFaqText}/>
               <h3>Book at your preferred Pinksky branch</h3>
               <p>Contact our team to confirm pricing, availability and appointment details.</p>
               <ServiceWhatsAppLinks serviceName={service.name}/>
@@ -1351,6 +1391,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           )}
 
           <h1>{article.title}</h1>
+          {article.authorName && <p className='pinksky-byline'>By {article.authorName}</p>}
 
           {article.summary && (
             <p className='lead'>
@@ -1377,6 +1418,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             )}
           </div>
 
+          <SeoFaqSection value={article.seoFaqText}/>
           <button
             className='primary'
             onClick={() => openBooking()}

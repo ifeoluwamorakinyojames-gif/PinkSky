@@ -204,6 +204,8 @@ if (path === '/api/content' && method === 'GET') {
   duration,
   items,
   seoKeyword,
+  seoIntent,
+  seoFaqText,
   seoHeading,
   seoTitle,
   metaDescription,
@@ -222,7 +224,7 @@ if (path === '/api/content' && method === 'GET') {
     client.fetch(`*[_type == "article" && published == true]
       | order(coalesce(publishedAt, _createdAt) desc) {
         _id, title, "slug": slug.current, intent, summary, body,
-        seoTitle, metaDescription, publishedAt,
+        seoTitle, metaDescription, seoKeyword, seoFaqText, authorName, publishedAt,
         "image": featuredImage.asset->url
       }`),
 
