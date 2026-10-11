@@ -177,7 +177,7 @@ function Editor({
       </>}
 
       {section==='products' && <>
-        <div className='admin-form-grid'><Field label='Product name'><input value={form.name||''} onChange={e=>set('name',e.target.value)}/></Field><Field label='Brand'><input value={form.brand||'Pink Sky'} onChange={e=>set('brand',e.target.value)}/></Field></div>
+        <div className='admin-form-grid'><Field label='Product name'><input value={form.name||''} onChange={e=>set('name',e.target.value)}/></Field><Field label='Brand'><input value={form.brand||'Pinksky'} onChange={e=>set('brand',e.target.value)}/></Field></div>
         <div className='admin-form-grid'><Field label='Slug'><input value={form.slug?.current||form.slug||''} onChange={e=>set('slug',e.target.value)}/></Field><Field label='Category'><input value={form.category||''} onChange={e=>set('category',e.target.value)}/></Field></div>
         <div className='admin-form-grid'><Field label='Regular price (NGN)'><input type='number' min='0' value={form.regularPrice??''} onChange={e=>set('regularPrice',e.target.value===''?undefined:Number(e.target.value))}/></Field><Field label='Sale price (NGN)'><input type='number' min='0' value={form.salePrice??''} onChange={e=>set('salePrice',e.target.value===''?undefined:Number(e.target.value))}/></Field></div>
         <div className='admin-form-grid'><Field label='Stock quantity'><input type='number' min='0' value={form.stockQuantity??0} onChange={e=>set('stockQuantity',Number(e.target.value))}/></Field><Field label='Size / Volume'><input value={form.size||''} onChange={e=>set('size',e.target.value)}/></Field></div>
@@ -326,18 +326,18 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
   }
   async function logout(){try{await adminApi.logout()}finally{setSession({authenticated:false});setSection('dashboard')}}
 
-  if(session===null)return <div className='admin-auth-shell'><div className='admin-login-card loading-card'><Loader2 className='spin'/><p>Checking Pink Sky admin session…</p></div></div>
+  if(session===null)return <div className='admin-auth-shell'><div className='admin-login-card loading-card'><Loader2 className='spin'/><p>Checking Pinksky admin session…</p></div></div>
 
   if(!session.authenticated)return <div className='admin-auth-shell'>
     <div className='admin-login-brand'>
-      <img src='./resources/pinksky-logo.jpg' alt='Pink Sky'/>
-      <span>Pink Sky Beauty & Wellness</span><h1>Staff Administration</h1>
+      <img src='./resources/pinksky-logo.jpg' alt='Pinksky'/>
+      <span>Pinksky Beauty & Wellness</span><h1>Staff Administration</h1>
       <p>Manage services, products, bookings, banners and website content from one secure workspace.</p>
       <button className='admin-link-button' onClick={onExit}><ArrowLeft size={17}/> Back to website</button>
     </div>
     <form className='admin-login-card' onSubmit={submitLogin}>
       <div className='admin-lock'><LockKeyhole/></div><span className='admin-kicker'>Authorised staff only</span>
-      <h2>Sign in to Pink Sky Admin</h2><p className='admin-muted'>Use the staff account assigned to you by a Pink Sky owner.</p>
+      <h2>Sign in to Pinksky Admin</h2><p className='admin-muted'>Use the staff account assigned to you by a Pinksky owner.</p>
       <Field label='Email address'><input type='email' required autoComplete='username' value={email} onChange={e=>setEmail(e.target.value)}/></Field>
       <Field label='Password'><input type='password' required autoComplete='current-password' value={password} onChange={e=>setPassword(e.target.value)}/></Field>
       {loginError&&<div className='admin-error'>{loginError}</div>}
@@ -350,13 +350,13 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
   const meta=sectionMeta[section]
   return <div className='admin-shell'>
     <aside className={`admin-sidebar ${mobileOpen?'open':''}`}>
-      <div className='admin-sidebar-brand'><img src='./resources/pinksky-logo.jpg' alt='Pink Sky'/><div><strong>Pink Sky</strong><span>Administration</span></div><button className='admin-mobile-close' onClick={()=>setMobileOpen(false)}><X/></button></div>
+      <div className='admin-sidebar-brand'><img src='./resources/pinksky-logo.jpg' alt='Pinksky'/><div><strong>Pinksky</strong><span>Administration</span></div><button className='admin-mobile-close' onClick={()=>setMobileOpen(false)}><X/></button></div>
       <nav className='admin-nav'>{visibleSections.map(key=>{const item=sectionMeta[key],I=item.icon;return <button key={key} className={section===key?'active':''} onClick={()=>{setSection(key);setMobileOpen(false)}}><I size={18}/>{item.label}</button>})}</nav>
       <div className='admin-sidebar-bottom'><button onClick={onExit}><ArrowLeft size={17}/> View website</button><button onClick={logout}><LogOut size={17}/> Sign out</button></div>
     </aside>
 
     <main className='admin-main'>
-      <header className='admin-topbar'><button className='admin-menu' onClick={()=>setMobileOpen(true)}><Menu/></button><div><span className='admin-kicker'>Pink Sky Admin</span><h1>{meta.label}</h1></div><div className='admin-user-chip'><span>{user.name||user.email}</span><strong>{roleLabel(user.role)}</strong></div></header>
+      <header className='admin-topbar'><button className='admin-menu' onClick={()=>setMobileOpen(true)}><Menu/></button><div><span className='admin-kicker'>Pinksky Admin</span><h1>{meta.label}</h1></div><div className='admin-user-chip'><span>{user.name||user.email}</span><strong>{roleLabel(user.role)}</strong></div></header>
 
       {section==='dashboard'?<section className='admin-dashboard-home'>
         <div className='admin-welcome-card'><div><span className='admin-kicker'>Welcome back</span><h2>{user.name||user.email}</h2><p>Manage the website from this dashboard. Sanity remains behind the scenes.</p></div><ShieldCheck size={48}/></div>
@@ -367,7 +367,7 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
         </div>
         {loading&&<div className='admin-state'><Loader2 className='spin'/> Loading…</div>}
         {loadError&&<div className='admin-error admin-page-error'>{loadError}</div>}
-        {!loading&&!loadError&&section==='settings'&&items.length===0&&<button className='admin-primary' onClick={()=>setSelected({_new:true,businessName:'Pink Sky Beauty & Wellness',tagline:'Beauty from within.'})}>Create website settings</button>}
+        {!loading&&!loadError&&section==='settings'&&items.length===0&&<button className='admin-primary' onClick={()=>setSelected({_new:true,businessName:'Pinksky Beauty & Wellness',tagline:'Beauty from within.'})}>Create website settings</button>}
         {!loading&&!loadError&&section!=='settings'&&<div className='admin-table-wrap'><table className='admin-table'><thead><tr><th>Name / Title</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>
           {items.length===0?<tr><td colSpan={4} className='admin-empty'>No records yet.</td></tr>:items.map((item,index)=><tr key={item._id||item.id||index}><td><strong>{item.name||item.title||item.customerName||item.email||'Untitled'}</strong><span>{item.slug?.current||item.service||item.role||''}</span></td><td><span className='admin-status'>{item.status||(item.published===false?'Hidden':'Published')}</span></td><td>{item._updatedAt?new Date(item._updatedAt).toLocaleDateString():'—'}</td><td><button className='admin-text-button' onClick={()=>setSelected(item)}>{canWrite(user.role)?'Edit':'View'}</button></td></tr>)}
         </tbody></table></div>}
