@@ -809,9 +809,9 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       </div>
 
       <header>
-        <button
+        <a
           className='logo-button'
-          onClick={() => go()}
+          href='/'
         >
           <img
             src={
@@ -820,25 +820,25 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             }
             alt='Pinksky'
           />
-        </button>
+        </a>
 
         <nav>
-          <button onClick={() => go()}>Home</button>
-          <button onClick={() => go('services')}>
+          <a href='/'>Home</a>
+          <a href='/services'>
             Services
-          </button>
-          <button onClick={() => go('shop')}>
+          </a>
+          <a href='/shop'>
             Beauty Shop
-          </button>
-          <button onClick={() => go('blog')}>
+          </a>
+          <a href='/blog'>
             Blog
-          </button>
-          <button onClick={() => go('locations')}>
+          </a>
+          <a href='/locations'>
             Locations
-          </button>
-          <button onClick={() => go('programs')}>
+          </a>
+          <a href='/programs'>
             Packages
-          </button>
+          </a>
         </nav>
 
         <button
@@ -1153,16 +1153,16 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
         <main>
           <section className='detail-hero pinksky-service-page'>
             <div className='pinksky-breadcrumb'>
-              <button onClick={() => go()}>Home</button><span>/</span>
-              <button onClick={() => go('services')}>Services</button><span>/</span>
+              <a href='/'>Home</a><span>/</span>
+              <a href='/services'>Services</a><span>/</span>
               <span>{service.name}</span>
             </div>
-            <button
+            <a
               className='back'
-              onClick={() => go('services')}
+              href='/services'
             >
               <ArrowLeft size={17} /> All services
-            </button>
+            </a>
 
             <div className='detail-grid pinksky-product-layout'>
               <Img
@@ -1254,17 +1254,17 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             <section className='pinksky-related-services'>
               <div className='pinksky-related-heading'>
                 <h2>Explore more Pinksky services</h2>
-                <button className='secondary' onClick={() => go('services')}>All services <ArrowRight size={16}/></button>
+                <a className='secondary' href='/services'>All services <ArrowRight size={16}/></a>
               </div>
               <div className='pinksky-related-grid'>
                 {services.filter(item => item.slug !== service.slug).slice(0,3).map(item => (
                   <article className='pinksky-related-card' key={item.slug}>
-                    <button onClick={() => go('service/' + item.slug)}>
+                    <a href={'/service/' + item.slug}>
                       <Img src={item.image || '/resources/pinksky-logo.jpg'} alt={item.name}/>
                       <span>{item.name}</span>
                       {item.short && <small>{item.short}</small>}
                       <strong>View service <ArrowRight size={16}/></strong>
-                    </button>
+                    </a>
                   </article>
                 ))}
               </div>
@@ -1285,9 +1285,9 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       <div>
         {header}
         <main className='content pinksky-product-detail'>
-          <button className='back' onClick={() => go('shop')}>
+          <a className='back' href='/shop'>
             <ArrowLeft size={17} /> Back to Beauty Shop
-          </button>
+          </a>
           <div className='pinksky-product-layout'>
             <div className='pinksky-product-gallery'>
               <Img src={photos[0] || '/resources/pinksky-logo.jpg'} alt={product.name} priority />
@@ -1325,10 +1325,10 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             <h2>Explore more products</h2>
             <div className='grid'>{products.filter(item => item.slug !== product.slug).slice(0, 3).map(item =>
               <article className='card' key={item._id}>
-                <button type='button' className='pinksky-product-related-link' onClick={() => go('product/' + item.slug)}>
+                <a className='pinksky-product-related-link' href={'/product/' + item.slug}>
                   <Img src={item.images?.[0] || '/resources/pinksky-logo.jpg'} alt={item.name} />
                   <strong>{item.name}</strong><PinkskyProductPrice product={item} />
-                </button>
+                </a>
               </article>)}</div>
           </section>}
         </main>
@@ -1344,12 +1344,20 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
         {header}
 
         <main className='article-page'>
-          <button
+          <a
             className='back'
-            onClick={() => go('blog')}
+            href='/blog'
           >
             <ArrowLeft size={17} /> Beauty Guides
-          </button>
+          </a>
+
+          {article.image && (
+            <Img
+              src={article.image}
+              alt={article.title}
+              priority
+            />
+          )}
 
           {article.intent && (
             <span className='eyebrow'>
@@ -1366,13 +1374,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             </p>
           )}
 
-          {article.image && (
-            <Img
-              src={article.image}
-              alt={article.title}
-              priority
-            />
-          )}
+          
 
           <div className='article-body'>
             {article.body?.length ? (
@@ -1434,12 +1436,9 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                       <p>{item.short}</p>
                     )}
 
-                    <button
-  type='button'
-  onClick={() => go('service/' + item.slug)}
->
+                    <a href={'/service/' + item.slug}>
   View service <ArrowRight size={15} />
-</button>
+</a>
 
 <ServiceWhatsAppLinks serviceName={item.name} />
                   </div>
@@ -1703,13 +1702,10 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             </p>
 
             <div className='actions'>
-              <button
-                className='primary'
-                onClick={() => openBooking()}
-              >
-                <CalendarDays size={17} /> Book a
-                Service
-              </button>
+              <div className='hero-booking-options'>
+                <span>Book a Service - Choose Your Branch</span>
+                <ServiceWhatsAppLinks serviceName='an appointment' />
+              </div>
 
               {whatsapp && (
                 <a
@@ -1747,10 +1743,8 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                 <article
                   className='card'
                   key={item._id || item.slug}
-                  onClick={() =>
-                    go('service/' + item.slug)
-                  }
                 >
+                  <a className='service-card-link' href={'/service/' + item.slug}>
                   <Img
                     src={
                       item.image ||
@@ -1766,6 +1760,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                       <p>{item.short}</p>
                     )}
                   </div>
+                </a>
                 </article>
               ))}
             </div>

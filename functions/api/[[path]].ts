@@ -209,8 +209,8 @@ if (path === '/api/content' && method === 'GET') {
   seoHeading,
   seoTitle,
   metaDescription,
-  "image": heroImage.asset->url,
-  "gallery": gallery[].asset->url
+  "image": heroImage.asset->url + "?w=960&fm=webp&q=75",
+  "gallery": gallery[].asset->url + "?w=800&fm=webp&q=75"
 }`),
 
     client.fetch(`*[_type == "banner" && active == true &&
