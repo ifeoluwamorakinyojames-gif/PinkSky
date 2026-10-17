@@ -1351,6 +1351,14 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             <ArrowLeft size={17} /> Beauty Guides
           </a>
 
+          {article.image && (
+            <Img
+              src={article.image}
+              alt={article.title}
+              priority
+            />
+          )}
+
           {article.intent && (
             <span className='eyebrow'>
               {article.intent}
@@ -1366,13 +1374,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             </p>
           )}
 
-          {article.image && (
-            <Img
-              src={article.image}
-              alt={article.title}
-              priority
-            />
-          )}
+          
 
           <div className='article-body'>
             {article.body?.length ? (
