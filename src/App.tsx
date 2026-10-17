@@ -1703,13 +1703,10 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             </p>
 
             <div className='actions'>
-              <button
-                className='primary'
-                onClick={() => openBooking()}
-              >
-                <CalendarDays size={17} /> Book a
-                Service
-              </button>
+              <div className='hero-booking-options'>
+                <span>Book a Service - Choose Your Branch</span>
+                <ServiceWhatsAppLinks serviceName='an appointment' />
+              </div>
 
               {whatsapp && (
                 <a
