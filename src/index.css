@@ -6,7 +6,7 @@ button,a,input,select,textarea{font:inherit}button{cursor:pointer}a{text-decorat
 .announcement{background:#311520;color:#fff;padding:9px 20px;text-align:center;font-size:12px}
 header{height:78px;position:sticky;top:0;z-index:20;display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:24px;padding:0 6vw;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
 .logo-button{border:0;background:none;padding:0}.logo-button img{width:145px;max-height:52px;object-fit:contain}
-nav{display:flex;justify-content:center;gap:22px}nav button,.back{border:0;background:none;font-weight:700}
+nav{display:flex;justify-content:center;gap:22px}nav button,nav a,.back{border:0;background:none;font-weight:700}
 .primary,.secondary{min-height:46px;border-radius:999px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:800;border:1px solid transparent}
 .primary{background:linear-gradient(135deg,var(--pink),var(--deep));color:#fff}.secondary{border-color:var(--line);background:#fff;color:var(--plum)}
 .menu-button{display:none;border:0;background:none}.mobile-menu{display:none}
@@ -18,7 +18,7 @@ nav{display:flex;justify-content:center;gap:22px}nav button,.back{border:0;backg
 .hero p,.lead{font-size:18px;color:var(--muted);line-height:1.7}.actions{display:flex;gap:10px;flex-wrap:wrap}
 .eyebrow{color:var(--deep);font-size:11px;text-transform:uppercase;letter-spacing:.14em;font-weight:900}
 .content,.article-page{padding:80px 6vw}.content>h2{font-family:Georgia,serif;font-size:clamp(36px,4vw,55px)}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}.card,.program-card{border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff;cursor:pointer}.card img,.program-card img{width:100%;height:290px;object-fit:cover}.card>div,.program-card>div{padding:20px}.card h3,.program-card h3{font-size:24px;margin:0 0 8px}.card p,.program-card p{color:var(--muted);line-height:1.6}.card button{border:0;background:none;color:var(--deep);font-weight:800;padding:0;display:flex;align-items:center;gap:6px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}.card,.program-card{border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff;cursor:pointer}.card img,.program-card img{width:100%;height:290px;object-fit:cover}.card>div,.program-card>div{padding:20px}.card h3,.program-card h3{font-size:24px;margin:0 0 8px}.card p,.program-card p{color:var(--muted);line-height:1.6}.card button,.card a[href^="/service/"]{border:0;background:none;color:var(--deep);font-weight:800;padding:0;display:flex;align-items:center;gap:6px}
 .detail-hero{padding:50px 6vw 80px}.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;margin-top:25px}.detail-grid>img{width:100%;height:560px;object-fit:cover;border-radius:28px}.detail-grid p{color:var(--muted);line-height:1.7}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}.chips span{padding:8px 12px;background:var(--blush);border-radius:999px;font-size:12px}.facts{display:flex;gap:20px;margin:18px 0}.facts span{padding:14px;background:var(--blush);border-radius:14px;display:grid;gap:5px}.facts small{color:var(--muted)}
 .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:40px}.gallery img{width:100%;height:280px;object-fit:cover;border-radius:18px}
@@ -125,7 +125,7 @@ footer{padding:42px 6vw;background:#26141e;color:#fff;display:grid;gap:12px}foot
 /* PINKSKY_PHASE2_SERVICE_PAGES */
 .pinksky-service-page{max-width:1500px;margin:auto}
 .pinksky-breadcrumb{display:flex;flex-wrap:wrap;gap:9px;color:var(--muted);font-size:13px;margin-bottom:20px}
-.pinksky-breadcrumb button{background:none;border:0;padding:0;color:var(--deep);font-weight:700}
+.pinksky-breadcrumb a{background:none;border:0;padding:0;color:var(--deep);font-weight:700}
 .pinksky-product-layout{align-items:start;gap:clamp(20px,4vw,64px)}
 .pinksky-product-layout>img{max-height:620px;object-fit:cover;background:var(--blush)}
 .pinksky-service-intro{font-size:18px;color:var(--plum)!important}
@@ -136,7 +136,7 @@ footer{padding:42px 6vw;background:#26141e;color:#fff;display:grid;gap:12px}foot
 .pinksky-related-heading{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
 .pinksky-related-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:22px}
 .pinksky-related-card{background:white;border:1px solid var(--line);border-radius:22px;overflow:hidden}
-.pinksky-related-card button{border:0;background:none;text-align:left;width:100%;padding:0 0 20px;display:grid;gap:10px}
+.pinksky-related-card a{border:0;background:none;text-align:left;width:100%;padding:0 0 20px;display:grid;gap:10px}
 .pinksky-related-card img{width:100%;height:230px;object-fit:cover}
 .pinksky-related-card span,.pinksky-related-card small,.pinksky-related-card strong{margin:0 20px}
 .pinksky-related-card span{font-size:20px;font-weight:800}
