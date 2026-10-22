@@ -188,9 +188,8 @@ export const onRequest = async (context: Ctx) => {
   const path = url.pathname
 
   try {
-    await ensureSchema(env)
 if (path === '/api/content' && method === 'GET') {
-  const client = sanity(env, false)
+  const client = sanity(env, false).withConfig({useCdn: url.searchParams.get('fresh') !== '1'})
 
   const results = await Promise.allSettled([
     client.fetch(`*[_type == "service" && published == true] | order(order asc, name asc) {

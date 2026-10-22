@@ -1,6 +1,6 @@
-import {useEffect, useMemo, useState, type FormEvent} from 'react'
+import {lazy, Suspense, useEffect, useMemo, useState, type FormEvent} from 'react'
 import {PortableText} from '@portabletext/react'
-import AdminDashboard from './AdminDashboard'
+const AdminDashboard = lazy(() => import('./AdminDashboard'))
 import {
   ArrowLeft,
   ArrowRight,
@@ -360,9 +360,9 @@ export default function App() {
     notes: '',
   })
 
-  const refreshContent = async () => {
+  const refreshContent = async (fresh = false) => {
     try {
-      const response = await fetch('/api/content', {
+      const response = await fetch(fresh ? '/api/content?fresh=1' : '/api/content', {
         method: 'GET',
         headers: {
           Accept: 'application/json',
@@ -444,9 +444,13 @@ export default function App() {
       setRoute(routeValue())
     }
 
-    const focusListener = () => {
-      refreshContent()
-    }
+    let lastFocusRefresh = Date.now()
+const focusListener = () => {
+  const now = Date.now()
+  if (now - lastFocusRefresh < 60000) return
+  lastFocusRefresh = now
+  refreshContent()
+}
 
     window.addEventListener('popstate', routeListener)
     window.addEventListener('focus', focusListener)
@@ -455,7 +459,7 @@ export default function App() {
 
     try {
       channel = new BroadcastChannel('pinksky-cms')
-      channel.onmessage = () => refreshContent()
+      channel.onmessage = () => refreshContent(true)
     } catch {
       // BroadcastChannel is optional.
     }
@@ -799,7 +803,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   }
 
   if (route.type === 'admin') {
-    return <AdminDashboard onExit={() => go()} />
+    return <Suspense fallback={<p>Loading Admin...</p>}><AdminDashboard onExit={() => go()} /></Suspense>
   }
 
   const header = (
@@ -816,7 +820,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           <img
             src={
               settings.logo ||
-              './resources/pinksky-logo.jpg'
+              '/resources/pinksky-logo.jpg'
             }
             alt='Pinksky'
           />
@@ -895,7 +899,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       <img
         src={
           settings.logo ||
-          './resources/pinksky-logo.jpg'
+          '/resources/pinksky-logo.jpg'
         }
         alt='Pinksky'
       />
@@ -1168,7 +1172,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
               <Img
                 src={
                   service.image ||
-                  './resources/pinksky-logo.jpg'
+                  '/resources/pinksky-logo.jpg'
                 }
                 alt={service.name}
                 priority
@@ -1424,7 +1428,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   <Img
                     src={
                       item.image ||
-                      './resources/pinksky-logo.jpg'
+                      '/resources/pinksky-logo.jpg'
                     }
                     alt={item.name}
                   />
@@ -1483,7 +1487,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   <Img
                     src={
                       item.images?.[0] ||
-                      './resources/pinksky-logo.jpg'
+                      '/resources/pinksky-logo.jpg'
                     }
                     alt={item.name}
                   />
@@ -1748,7 +1752,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   <Img
                     src={
                       item.image ||
-                      './resources/pinksky-logo.jpg'
+                      '/resources/pinksky-logo.jpg'
                     }
                     alt={item.name}
                   />
