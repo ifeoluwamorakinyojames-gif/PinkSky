@@ -179,7 +179,7 @@ async function currentUser(request: Request, env: Env) {
 
 function cleanPayload(payload: any) {
   const out = {...payload}
-  for (const key of ['_id','_rev','_createdAt','_updatedAt','id']) delete out[key]
+  for (const key of ['_id','_rev','_createdAt','_updatedAt','_type','id','bookingReference']) delete out[key]
   if (typeof out.slug === 'string') out.slug = {_type: 'slug', current: out.slug}
   return out
 }
