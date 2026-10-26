@@ -1,6 +1,7 @@
 import {useEffect, useMemo, useState, type FormEvent} from 'react'
 import {PortableText} from '@portabletext/react'
 import AdminDashboard from './AdminDashboard'
+import LuxeHomepage from './LuxeHomepage'
 import {
   ArrowLeft,
   ArrowRight,
@@ -233,14 +234,14 @@ function BannerCarousel({banners}: {banners: Banner[]}) {
     <img
       src={image}
       alt={banner.alt || banner.title || 'Pinksky promotion'}
-      loading='eager'
+      loading='lazy'
       decoding='async'
-      fetchPriority='high'
+      fetchPriority='low'
     />
   )
 
   return (
-    <section className='rollover-banner'>
+    <section className='rollover-banner' aria-label='Featured promotions'>
       {banner.link ? <a href={banner.link}>{node}</a> : node}
 
       {banners.length > 1 && (
@@ -816,13 +817,13 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           <img
             src={
               settings.logo ||
-              './resources/pinksky-logo.jpg'
+              '/resources/pinksky-logo.jpg'
             }
             alt='Pinksky'
           />
         </a>
 
-        <nav>
+        <nav aria-label='Main navigation'>
           <a href='/'>Home</a>
           <a href='/services'>
             Services
@@ -850,6 +851,9 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
 
         <button
           className='menu-button'
+          type='button'
+          aria-label={menu ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={menu}
           onClick={() => setMenu(value => !value)}
         >
           {menu ? <X /> : <Menu />}
@@ -859,7 +863,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       {menu && (
         <div className='mobile-menu'>
           {[
-  ['Home', 'home'],
+  ['Home', ''],
   ['Services', 'services'],
   ['Shop', 'shop'],
   ['Locations', 'locations'],
@@ -895,7 +899,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       <img
         src={
           settings.logo ||
-          './resources/pinksky-logo.jpg'
+          '/resources/pinksky-logo.jpg'
         }
         alt='Pinksky'
       />
@@ -1168,7 +1172,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
               <Img
                 src={
                   service.image ||
-                  './resources/pinksky-logo.jpg'
+                  '/resources/pinksky-logo.jpg'
                 }
                 alt={service.name}
                 priority
@@ -1424,7 +1428,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   <Img
                     src={
                       item.image ||
-                      './resources/pinksky-logo.jpg'
+                      '/resources/pinksky-logo.jpg'
                     }
                     alt={item.name}
                   />
@@ -1483,7 +1487,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   <Img
                     src={
                       item.images?.[0] ||
-                      './resources/pinksky-logo.jpg'
+                      '/resources/pinksky-logo.jpg'
                     }
                     alt={item.name}
                   />
@@ -1681,154 +1685,17 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   return (
     <div>
       {header}
-
-      <main>
-        <BannerCarousel banners={banners} />
-
-        <section className='hero'>
-          <div>
-            <span className='eyebrow'>
-              Pinksky Beauty & Wellness
-            </span>
-
-            <h1>
-              Your beauty journey starts with{' '}
-              <em>Pinksky.</em>
-            </h1>
-
-            <p>
-              Professional beauty and wellness
-              services across Warri & Effurun.
-            </p>
-
-            <div className='actions'>
-              <div className='hero-booking-options'>
-                <span>Book a Service - Choose Your Branch</span>
-                <ServiceWhatsAppLinks serviceName='an appointment' />
-              </div>
-
-              {whatsapp && (
-                <a
-                  className='secondary'
-                  href={whatsapp}
-                  target='_blank'
-                  rel='noreferrer'
-                >
-                  <MessageCircle size={17} /> WhatsApp
-                  Us
-                </a>
-              )}
-            </div>
-          </div>
-
-          <Img
-            src='./resources/pinksky-home-banner.jpg'
-            alt='Pinksky Beauty & Wellness'
-            priority
-          />
-        </section>
-
-        <section className='content'>
-          <span className='eyebrow'>
-            Important services
-          </span>
-
-          <h2>
-            Choose your next Pinksky experience.
-          </h2>
-
-          {services.length ? (
-            <div className='grid'>
-              {services.slice(0, 6).map(item => (
-                <article
-                  className='card'
-                  key={item._id || item.slug}
-                >
-                  <a className='service-card-link' href={'/service/' + item.slug}>
-                  <Img
-                    src={
-                      item.image ||
-                      './resources/pinksky-logo.jpg'
-                    }
-                    alt={item.name}
-                  />
-
-                  <div>
-                    <h3>{item.name}</h3>
-
-                    {item.short && (
-                      <p>{item.short}</p>
-                    )}
-                  </div>
-                </a>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <p>
-              No services are currently published.
-            </p>
-          )}
-        </section>
-
-        {reviews.length > 0 && (
-          <section className='content reviews'>
-            <span className='eyebrow'>
-              Customer reviews
-            </span>
-
-            <h2>What clients are saying.</h2>
-
-            <div className='review-grid'>
-              {reviews.map(review => (
-                <article key={review._id}>
-                  <div>
-                    {Array.from({
-                      length: review.rating || 5,
-                    }).map((_, index) => (
-                      <Star
-                        key={index}
-                        size={15}
-                      />
-                    ))}
-                  </div>
-
-                  <p>â€œ{review.text}â€</p>
-
-                  <strong>
-                    {review.customerName}
-                  </strong>
-
-                  {review.source && (
-                    <small>{review.source}</small>
-                  )}
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section className='content contact'>
-          <div>
-            <Phone />
-
-            <h2>Ready to book?</h2>
-
-            <p>
-              Call, WhatsApp or visit one of our
-              branches.
-            </p>
-          </div>
-
-          <button
-            className='primary'
-            onClick={() => openBooking()}
-          >
-            Book Appointment
-          </button>
-        </section>
-      </main>
-
+      <LuxeHomepage
+        promotion={banners.length > 0 ? <BannerCarousel banners={banners} /> : null}
+        services={services}
+        reviews={reviews}
+        products={products}
+        articles={articles}
+        locations={locations}
+        programs={programs}
+        loading={contentLoading}
+        onBook={openBooking}
+      />
       {footer}
       {bookingModal}
     </div>
