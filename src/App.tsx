@@ -1,7 +1,8 @@
-import {useEffect, useMemo, useState, type FormEvent} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import {PortableText} from '@portabletext/react'
 import AdminDashboard from './AdminDashboard'
 import LuxeHomepage from './LuxeExactHomepage'
+import BranchBookingModal from './BranchBookingModal'
 import './luxe-nav.css'
 import {
   ArrowLeft,
@@ -279,37 +280,23 @@ const pinkSkyBranches = [
   },
 ] as const
 
-function serviceWhatsAppUrl(
-  serviceName: string,
-  branch: (typeof pinkSkyBranches)[number],
-) {
-  const message =
-    `Hello Pinksky, I would like to book ${serviceName} at your ` +
-    `${branch.name} branch. Please send me the available times, ` +
-    `price and booking details. Thank you.`
-
-  return `https://wa.me/${branch.whatsapp}?text=${encodeURIComponent(message)}`
-}
-
-function ServiceWhatsAppLinks({serviceName}: {serviceName: string}) {
+function ServiceWhatsAppLinks({
+  serviceName,
+  onBook,
+}: {
+  serviceName: string
+  onBook: (serviceName: string) => void
+}) {
   return (
-    <div
-      className='actions'
-      onClick={event => event.stopPropagation()}
-    >
-      {pinkSkyBranches.map(branch => (
-        <a
-          key={branch.id}
-          className='secondary'
-          href={serviceWhatsAppUrl(serviceName, branch)}
-          target='_blank'
-          rel='noreferrer'
-          onClick={event => event.stopPropagation()}
-        >
-          <MessageCircle size={16} />
-          {branch.name}
-        </a>
-      ))}
+    <div className='actions' onClick={event => event.stopPropagation()}>
+      <button
+        className='primary'
+        type='button'
+        onClick={event => {event.stopPropagation(); onBook(serviceName)}}
+      >
+        <MessageCircle size={17} aria-hidden='true'/>
+        Book {serviceName} · choose your branch
+      </button>
     </div>
   )
 }
@@ -327,8 +314,10 @@ export default function App() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [settings, setSettings] = useState<Settings>({})
 
-  const [bookingOpen, setBookingOpen] = useState(false)
-  const [bookingResult, setBookingResult] = useState('')
+  const [bookingSelection, setBookingSelection] = useState<{
+    serviceName: string
+    preferredBranchId?: string
+  } | null>(null)
   useEffect(() => {
   const trackPage = () => {
     const gtag = (window as any).gtag
@@ -349,20 +338,6 @@ export default function App() {
     window.removeEventListener('popstate', trackPage)
   }
 }, [])
-  const [bookingError, setBookingError] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-
-  const [form, setForm] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    service: '',
-    location: '',
-    preferredDate: '',
-    preferredTime: '',
-    notes: '',
-  })
-
   const refreshContent = async () => {
     try {
       const response = await fetch('/api/content', {
@@ -413,18 +388,7 @@ export default function App() {
       setPrograms(data.programs || [])
       setReviews(data.reviews || [])
 
-      setForm(current => ({
-        ...current,
-        service:
-          current.service ||
-          nextServices[0]?.name ||
-          '',
-        location:
-          current.location ||
-          nextLocations[0]?.name ||
-          '',
-      }))
-        } catch (error) {
+    } catch (error) {
       console.error('PinkSky content refresh failed', error)
 
       setServices([])
@@ -725,80 +689,16 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   }
 }, [service, product, article, settings])
 
-    const openBooking = (
-    serviceName?: string,
-    locationName?: string,
-  ) => {
-    const serviceNameForMessage =
-      serviceName ||
-      form.service ||
-      'an appointment'
+  const openBooking = (serviceName?: string, locationName?: string) => {
+    const location = (locationName || '').toLowerCase()
+    const preferredBranchId =
+      /delta.mall|shop.mall|shopmall|effurun/.test(location) ? 'delta-mall' :
+      /airport.road|warri/.test(location) ? 'airport-road' : undefined
 
-    const matchingBranch = pinkSkyBranches.find(branch =>
-      locationName
-        ? branch.name
-            .toLowerCase()
-            .includes(locationName.toLowerCase()) ||
-          locationName
-            .toLowerCase()
-            .includes(branch.name.toLowerCase())
-        : false,
-    )
-
-    if (matchingBranch) {
-      window.open(
-        serviceWhatsAppUrl(
-          serviceNameForMessage,
-          matchingBranch,
-        ),
-        '_blank',
-      )
-      return
-    }
-
-    const selected = window.confirm(
-      'Choose your closest Pinksky branch:\n\nOK - Airport Road, Warri\nCancel - Delta Mall, Effurun',
-    )
-
-    const branch = selected
-      ? pinkSkyBranches[0]
-      : pinkSkyBranches[1]
-
-    window.open(
-      serviceWhatsAppUrl(serviceNameForMessage, branch),
-      '_blank',
-    )
-  }
-
-  const submitBooking = async (event: FormEvent) => {
-    event.preventDefault()
-
-    setSubmitting(true)
-    setBookingError('')
-
-    try {
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify(form),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Booking failed')
-      }
-
-      setBookingResult(data.id || 'received')
-    } catch {
-      setBookingError(
-        'We could not save your request. Please use WhatsApp if this continues.',
-      )
-    } finally {
-      setSubmitting(false)
-    }
+    setBookingSelection({
+      serviceName: serviceName?.trim() || 'an appointment',
+      preferredBranchId,
+    })
   }
 
   if (route.type === 'admin') {
@@ -885,215 +785,15 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
     </footer>
   )
 
-  const bookingModal = bookingOpen && (
-    <div className='modal-backdrop'>
-      <div className='booking-modal'>
-        <button
-          className='modal-close'
-          onClick={() => setBookingOpen(false)}
-        >
-          <X />
-        </button>
-
-        {!bookingResult ? (
-          <>
-            <span className='eyebrow'>
-              Book Pinksky
-            </span>
-
-            <h2>Request an appointment</h2>
-
-            <form onSubmit={submitBooking}>
-              <label>
-                Full name
-                <input
-                  required
-                  value={form.name}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      name: event.target.value,
-                    })
-                  }
-                />
-              </label>
-
-              <label>
-                Phone
-                <input
-                  required
-                  value={form.phone}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      phone: event.target.value,
-                    })
-                  }
-                />
-              </label>
-
-              <label>
-                Email
-                <input
-                  type='email'
-                  value={form.email}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      email: event.target.value,
-                    })
-                  }
-                />
-              </label>
-
-              <label>
-                Service
-                <select
-                  required
-                  value={form.service}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      service: event.target.value,
-                    })
-                  }
-                >
-                  <option value=''>
-                    Select service
-                  </option>
-
-                  {services.map(item => (
-                    <option
-                      key={item._id || item.slug}
-                      value={item.name}
-                    >
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label>
-                Location
-                <select
-                  required
-                  value={form.location}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      location: event.target.value,
-                    })
-                  }
-                >
-                  <option value=''>
-                    Select location
-                  </option>
-
-                  {locations.map(item => (
-                    <option
-                      key={item._id || item.slug}
-                      value={item.name}
-                    >
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label>
-                Preferred date
-                <input
-                  required
-                  type='date'
-                  value={form.preferredDate}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      preferredDate:
-                        event.target.value,
-                    })
-                  }
-                />
-              </label>
-
-              <label>
-                Preferred time
-                <select
-                  required
-                  value={form.preferredTime}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      preferredTime:
-                        event.target.value,
-                    })
-                  }
-                >
-                  <option value=''>Select</option>
-                  <option>Morning</option>
-                  <option>Afternoon</option>
-                  <option>Evening</option>
-                </select>
-              </label>
-
-              <label>
-                Notes
-                <textarea
-                  value={form.notes}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      notes: event.target.value,
-                    })
-                  }
-                />
-              </label>
-
-              {bookingError && (
-                <p className='form-error'>
-                  {bookingError}
-                </p>
-              )}
-
-              <button
-                className='primary'
-                disabled={submitting}
-              >
-                {submitting
-                  ? 'Savingâ€¦'
-                  : 'Request appointment'}
-              </button>
-            </form>
-          </>
-        ) : (
-          <div className='success'>
-            <Check />
-
-            <h2>Request received</h2>
-
-            <p>
-              Your booking reference is{' '}
-              <strong>{bookingResult}</strong>.
-              Pinksky will confirm availability.
-            </p>
-
-            {whatsapp && (
-              <a
-                className='primary'
-                href={`${whatsapp}?text=${encodeURIComponent(
-                  `Hello Pinksky, I submitted a booking request. Ref: ${bookingResult}`,
-                )}`}
-                target='_blank'
-                rel='noreferrer'
-              >
-                Continue on WhatsApp
-              </a>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+  const bookingModal = bookingSelection && (
+    <BranchBookingModal
+      branches={pinkSkyBranches}
+      serviceName={bookingSelection.serviceName}
+      preferredBranchId={bookingSelection.preferredBranchId}
+      onClose={() => setBookingSelection(null)}
+    />
   )
+
      if (
     contentLoading &&
     ['service', 'product', 'article'].includes(route.type)
@@ -1186,6 +886,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
 
                   <ServiceWhatsAppLinks
                     serviceName={service.name}
+                    onBook={openBooking}
                   />
                 </div>
               </div>
@@ -1212,7 +913,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
               <SeoFaqSection value={service.seoFaqText}/>
               <h3>Book at your preferred Pinksky branch</h3>
               <p>Contact our team to confirm pricing, availability and appointment details.</p>
-              <ServiceWhatsAppLinks serviceName={service.name}/>
+              <ServiceWhatsAppLinks serviceName={service.name} onBook={openBooking}/>
             </section>
           </section>
           {services.some(item => item.slug !== service.slug) && (
@@ -1405,7 +1106,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   View service <ArrowRight size={15} />
 </a>
 
-<ServiceWhatsAppLinks serviceName={item.name} />
+<ServiceWhatsAppLinks serviceName={item.name} onBook={openBooking} />
                   </div>
                 </article>
               ))}
