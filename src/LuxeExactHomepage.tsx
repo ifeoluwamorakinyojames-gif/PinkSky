@@ -198,7 +198,7 @@ export default function LuxeHomepage({promotion,services,reviews,products,articl
         <div className='ft-booking-panel'>
           <div className='ft-booking-intro'><CalendarDays size={34}/><h3>Your next appointment starts here.</h3><p>We will help you confirm services, prices and available times.</p></div>
           <div className='ft-booking-choices'>
-            {branches.map(b=><button type='button' onClick={()=>onBook(undefined,b.name)} key={b._id||b.slug}><MapPin size={20}/><span><strong>{b.name}</strong><small>{b.address}</small></span><ChevronRight size={19}/></button>)}
+            {branches.map(b=><button type='button' onClick={()=>onBook(undefined,b.name)} key={b.slug}><MapPin size={20}/><span><strong>{b.name}</strong><small>{b.address}</small></span><ChevronRight size={19}/></button>)}
           </div>
         </div>
       </div>
