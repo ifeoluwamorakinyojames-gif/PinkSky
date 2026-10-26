@@ -429,7 +429,7 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
         <div className='admin-quick-grid'>{visibleSections.filter(x=>x!=='dashboard'&&x!=='team').map(key=>{const item=sectionMeta[key],I=item.icon;return <button key={key} onClick={()=>setSection(key)}><I/><strong>{item.label}</strong><span>Open section</span></button>})}</div>
       </section>:section==='bookings'?<BookingDesk user={user}/>:<section className='admin-resource-page'>
         <div className='admin-resource-toolbar'><div><span className='admin-kicker'>Manage</span><h2>{meta.label}</h2></div>
-          {canWrite(user.role)&&section!=='bookings'&&section!=='settings'&&<button className='admin-primary' onClick={()=>setSelected({_new:true,published:true,active:true})}>+ Add new</button>}
+          {canWrite(user.role)&&section!=='settings'&&<button className='admin-primary' onClick={()=>setSelected({_new:true,published:true,active:true})}>+ Add new</button>}
         </div>
         {section==='locations'&&<div className='booking-location-advice'>
           <strong>Branch booking contacts:</strong> Edit each branch to manage its two WhatsApp numbers, address, opening hours, and Active status. The online booking page reads these settings automatically.
