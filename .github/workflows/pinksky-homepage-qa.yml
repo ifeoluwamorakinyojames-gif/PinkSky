@@ -35,3 +35,6 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Check Cloudflare booking API bundle
+        run: npm exec -- esbuild 'functions/api/[[path]].ts' --bundle --platform=browser --format=esm --target=es2022 --outfile=/tmp/pinksky-api-check.mjs
