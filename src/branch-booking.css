@@ -1,0 +1,42 @@
+/* Pinksky booking flow: one branch decision before WhatsApp.
+ * Scoped styles so admin pages and service layout are unaffected. */
+.pinksky-branch-overlay{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(28,13,23,.72);backdrop-filter:blur(5px);padding:18px}
+.pinksky-branch-dialog{position:relative;width:min(850px,100%);max-height:min(92vh,900px);overflow-y:auto;overscroll-behavior:contain;background:#fffcfd;border-radius:26px;padding:clamp(22px,4vw,42px);box-shadow:0 35px 90px #12050c66}
+.pinksky-branch-close{position:absolute;top:17px;right:18px;width:42px;height:42px;display:grid;place-items:center;border:0;border-radius:50%;background:#f9eaf0;color:#61344e}
+.pinksky-branch-close:hover{background:#eed2df}
+.pinksky-branch-heading{padding-right:35px}
+.pinksky-branch-step{font-size:11px;font-weight:900;letter-spacing:.19em;color:#a5486d;text-transform:uppercase}
+.pinksky-branch-heading h2{font-family:Georgia,'Times New Roman',serif;font-weight:500;font-size:clamp(28px,4vw,43px);line-height:1.14;color:#412039;margin:11px 0 13px;max-width:675px}
+.pinksky-branch-heading p{font-size:15px;line-height:1.65;color:#74606c;margin:0 0 18px;max-width:700px}
+.pinksky-branch-service{display:inline-flex;gap:7px;flex-wrap:wrap;border-radius:100px;padding:9px 15px;background:#fff0f5;color:#623248;font-size:13px;margin-bottom:6px}
+.pinksky-branch-service strong{font-weight:800}
+.pinksky-branch-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:21px}
+.pinksky-branch-option{border:1px solid #e8ccd9;border-radius:19px;background:#fff;padding:clamp(17px,3vw,27px);display:flex;flex-direction:column;gap:16px;min-width:0;box-shadow:0 8px 24px #6324400a}
+.pinksky-branch-option:hover{border-color:#b96083}
+.pinksky-branch-preferred{border-color:#a64b70;background:#fff9fb}
+.pinksky-branch-option-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pinksky-branch-pin{background:#f8e4ec;border-radius:15px;width:49px;height:49px;display:grid;place-items:center;color:#ab5377;flex:0 0 auto}
+.pinksky-branch-option-header>div{min-width:0;flex:1}
+.pinksky-branch-option h3{margin:0;font-size:23px;font-family:Georgia,'Times New Roman',serif;color:#552b44}
+.pinksky-branch-option-header>div>span{font-size:12px;color:#8c6378}
+.pinksky-branch-selected{background:#fde6f0;color:#823758;padding:5px 9px;border-radius:100px;font-size:10px;font-weight:800}
+.pinksky-branch-address{margin:0;min-height:73px;font-size:14px;color:#6c5964;line-height:1.65}
+.pinksky-branch-choose{min-height:50px;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#a93b70,#782c50);border-radius:9px;color:#fff!important;font-weight:800;font-size:14px;padding:12px 15px;text-decoration:none!important}
+.pinksky-branch-choose:hover{background:#622341}
+.pinksky-branch-choose svg:last-child{margin-left:auto}
+.pinksky-branch-map{display:flex;align-items:center;justify-content:center;gap:6px;color:#8c4567!important;font-weight:750;font-size:12px;text-decoration:none!important}
+.pinksky-branch-map:hover{text-decoration:underline!important}
+.pinksky-branch-note{display:flex;align-items:flex-start;gap:9px;margin:23px 0 0;color:#75616b;font-size:12px;line-height:1.6}
+.pinksky-branch-note svg{flex:0 0 auto;color:#9b4a6d;margin-top:1px}
+.pinksky-branch-dialog :is(a,button):focus-visible{outline:3px solid #c36a92;outline-offset:3px}
+@media(max-width:650px){
+ .pinksky-branch-overlay{padding:10px;align-items:flex-end}
+ .pinksky-branch-dialog{border-radius:22px 22px 13px 13px;max-height:94dvh;padding:26px 18px 20px}
+ .pinksky-branch-options{grid-template-columns:1fr;gap:12px}
+ .pinksky-branch-option{padding:17px;gap:10px}
+ .pinksky-branch-address{min-height:0}
+ .pinksky-branch-option h3{font-size:21px}
+ .pinksky-branch-heading h2{font-size:30px;padding-right:5px}
+ .pinksky-branch-close{right:10px;top:10px}
+}
+@media(prefers-reduced-motion:reduce){.pinksky-branch-overlay{scroll-behavior:auto}}
