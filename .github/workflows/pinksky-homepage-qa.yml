@@ -1,0 +1,40 @@
+name: Pinksky Homepage QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/pinksky-homepage-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Typecheck and Vite build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Check Cloudflare booking API bundle
+        run: npm exec -- esbuild 'functions/api/[[path]].ts' --bundle --platform=browser --format=esm --target=es2022 --outfile=/tmp/pinksky-api-check.mjs

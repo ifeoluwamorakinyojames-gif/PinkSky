@@ -1,6 +1,9 @@
-import {useEffect, useMemo, useState, type FormEvent} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import {PortableText} from '@portabletext/react'
 import AdminDashboard from './AdminDashboard'
+import LuxeHomepage from './LuxeExactHomepage'
+import BranchBookingModal from './BranchBookingModal'
+import './luxe-nav.css'
 import {
   ArrowLeft,
   ArrowRight,
@@ -9,6 +12,7 @@ import {
   MapPin,
   Menu,
   MessageCircle,
+  Sparkles,
   Phone,
   Star,
   X,
@@ -233,14 +237,14 @@ function BannerCarousel({banners}: {banners: Banner[]}) {
     <img
       src={image}
       alt={banner.alt || banner.title || 'Pinksky promotion'}
-      loading='eager'
+      loading='lazy'
       decoding='async'
-      fetchPriority='high'
+      fetchPriority='low'
     />
   )
 
   return (
-    <section className='rollover-banner'>
+    <section className='rollover-banner' aria-label='Featured promotions'>
       {banner.link ? <a href={banner.link}>{node}</a> : node}
 
       {banners.length > 1 && (
@@ -263,50 +267,34 @@ const pinkSkyBranches = [
   {
     id: 'airport-road',
     name: 'Airport Road, Warri',
-    whatsapp: '2348120147351',
-    address:
-      'Magnifique House, 67 Airport Road, near Union Bank, opposite Christ Embassy, Warri',
-    otherPhone: '08037416330',
+    address: 'Magnifique House, 67 Airport Road, near Union Bank, opposite Christ Embassy, Warri',
+    whatsappNumbers: ['08037416330', '08129147351'],
   },
   {
     id: 'delta-mall',
-    name: 'Delta Mall, Effurun',
-    whatsapp: '2348101214336',
+    name: 'ShopMall — Delta Mall, Effurun',
     address: 'Shop 20/23, Delta Mall, Effurun, Delta State',
+    whatsappNumbers: ['09127118845', '08101214336'],
   },
 ] as const
 
-function serviceWhatsAppUrl(
-  serviceName: string,
-  branch: (typeof pinkSkyBranches)[number],
-) {
-  const message =
-    `Hello Pinksky, I would like to book ${serviceName} at your ` +
-    `${branch.name} branch. Please send me the available times, ` +
-    `price and booking details. Thank you.`
-
-  return `https://wa.me/${branch.whatsapp}?text=${encodeURIComponent(message)}`
-}
-
-function ServiceWhatsAppLinks({serviceName}: {serviceName: string}) {
+function ServiceWhatsAppLinks({
+  serviceName,
+  onBook,
+}: {
+  serviceName: string
+  onBook: (serviceName: string) => void
+}) {
   return (
-    <div
-      className='actions'
-      onClick={event => event.stopPropagation()}
-    >
-      {pinkSkyBranches.map(branch => (
-        <a
-          key={branch.id}
-          className='secondary'
-          href={serviceWhatsAppUrl(serviceName, branch)}
-          target='_blank'
-          rel='noreferrer'
-          onClick={event => event.stopPropagation()}
-        >
-          <MessageCircle size={16} />
-          {branch.name}
-        </a>
-      ))}
+    <div className='actions' onClick={event => event.stopPropagation()}>
+      <button
+        className='primary'
+        type='button'
+        onClick={event => {event.stopPropagation(); onBook(serviceName)}}
+      >
+        <MessageCircle size={17} aria-hidden='true'/>
+        Book {serviceName} · choose your branch
+      </button>
     </div>
   )
 }
@@ -324,8 +312,10 @@ export default function App() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [settings, setSettings] = useState<Settings>({})
 
-  const [bookingOpen, setBookingOpen] = useState(false)
-  const [bookingResult, setBookingResult] = useState('')
+  const [bookingSelection, setBookingSelection] = useState<{
+    serviceName: string
+    preferredBranchId?: string
+  } | null>(null)
   useEffect(() => {
   const trackPage = () => {
     const gtag = (window as any).gtag
@@ -346,20 +336,6 @@ export default function App() {
     window.removeEventListener('popstate', trackPage)
   }
 }, [])
-  const [bookingError, setBookingError] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-
-  const [form, setForm] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    service: '',
-    location: '',
-    preferredDate: '',
-    preferredTime: '',
-    notes: '',
-  })
-
   const refreshContent = async () => {
     try {
       const response = await fetch('/api/content', {
@@ -410,18 +386,7 @@ export default function App() {
       setPrograms(data.programs || [])
       setReviews(data.reviews || [])
 
-      setForm(current => ({
-        ...current,
-        service:
-          current.service ||
-          nextServices[0]?.name ||
-          '',
-        location:
-          current.location ||
-          nextLocations[0]?.name ||
-          '',
-      }))
-        } catch (error) {
+    } catch (error) {
       console.error('PinkSky content refresh failed', error)
 
       setServices([])
@@ -722,80 +687,16 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   }
 }, [service, product, article, settings])
 
-    const openBooking = (
-    serviceName?: string,
-    locationName?: string,
-  ) => {
-    const serviceNameForMessage =
-      serviceName ||
-      form.service ||
-      'an appointment'
+  const openBooking = (serviceName?: string, locationName?: string) => {
+    const location = (locationName || '').toLowerCase()
+    const preferredBranchId =
+      /delta.mall|shop.mall|shopmall|effurun/.test(location) ? 'delta-mall' :
+      /airport.road|warri/.test(location) ? 'airport-road' : undefined
 
-    const matchingBranch = pinkSkyBranches.find(branch =>
-      locationName
-        ? branch.name
-            .toLowerCase()
-            .includes(locationName.toLowerCase()) ||
-          locationName
-            .toLowerCase()
-            .includes(branch.name.toLowerCase())
-        : false,
-    )
-
-    if (matchingBranch) {
-      window.open(
-        serviceWhatsAppUrl(
-          serviceNameForMessage,
-          matchingBranch,
-        ),
-        '_blank',
-      )
-      return
-    }
-
-    const selected = window.confirm(
-      'Choose your closest Pinksky branch:\n\nOK - Airport Road, Warri\nCancel - Delta Mall, Effurun',
-    )
-
-    const branch = selected
-      ? pinkSkyBranches[0]
-      : pinkSkyBranches[1]
-
-    window.open(
-      serviceWhatsAppUrl(serviceNameForMessage, branch),
-      '_blank',
-    )
-  }
-
-  const submitBooking = async (event: FormEvent) => {
-    event.preventDefault()
-
-    setSubmitting(true)
-    setBookingError('')
-
-    try {
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify(form),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Booking failed')
-      }
-
-      setBookingResult(data.id || 'received')
-    } catch {
-      setBookingError(
-        'We could not save your request. Please use WhatsApp if this continues.',
-      )
-    } finally {
-      setSubmitting(false)
-    }
+    setBookingSelection({
+      serviceName: serviceName?.trim() || 'an appointment',
+      preferredBranchId,
+    })
   }
 
   if (route.type === 'admin') {
@@ -804,88 +705,50 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
 
   const header = (
     <>
-      <div className='announcement'>
-        Two Pinksky locations in Warri & Effurun
+      <div className='announcement ft-site-announcement'>
+        <span>Pinksky Beauty & Wellness</span>
+        <span>Two studios in Warri & Effurun, Delta State</span>
       </div>
-
-      <header>
-        <a
-          className='logo-button'
-          href='/'
-        >
-          <img
-            src={
-              settings.logo ||
-              './resources/pinksky-logo.jpg'
-            }
-            alt='Pinksky'
-          />
-        </a>
-
-        <nav>
+      <header className='ft-site-header'>
+        <nav className='ft-site-nav ft-nav-first' aria-label='Main left navigation'>
           <a href='/'>Home</a>
-          <a href='/services'>
-            Services
-          </a>
-          <a href='/shop'>
-            Beauty Shop
-          </a>
-          <a href='/blog'>
-            Blog
-          </a>
-          <a href='/locations'>
-            Locations
-          </a>
-          <a href='/programs'>
-            Packages
-          </a>
+          <a href='/services'>Services</a>
+          <a href='/shop'>Beauty Shop</a>
         </nav>
-
-        <button
-          className='primary'
-          onClick={() => openBooking()}
-        >
-          <CalendarDays size={16} /> Book
+        <a href='/' className='ft-nav-logo' aria-label='Pinksky Beauty & Wellness home'>
+          <img src={settings.logo || '/resources/pinksky-logo.jpg'} alt='Pinksky Beauty & Wellness' width={140} height={56}/>
+        </a>
+        <nav className='ft-site-nav ft-nav-second' aria-label='Main right navigation'>
+          <a href='/blog'>Blog</a>
+          <a href='/locations'>Locations</a>
+          <a href='/programs'>Packages</a>
+        </nav>
+        <button className='ft-nav-book' type='button' onClick={() => openBooking()}>
+          <Sparkles size={17} aria-hidden='true'/> Book Now
         </button>
-
         <button
-          className='menu-button'
+          className='ft-nav-menu'
+          type='button'
+          aria-label={menu ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={menu}
+          aria-controls='ft-mobile-menu'
           onClick={() => setMenu(value => !value)}
         >
-          {menu ? <X /> : <Menu />}
+          {menu ? <X size={24}/> : <Menu size={24}/>}
         </button>
       </header>
-
       {menu && (
-        <div className='mobile-menu'>
+        <nav id='ft-mobile-menu' className='ft-mobile-menu' aria-label='Mobile navigation'>
           {[
-  ['Home', 'home'],
-  ['Services', 'services'],
-  ['Shop', 'shop'],
-  ['Locations', 'locations'],
-].map(([label, path]) => (
-  <button
-    key={label}
-    onClick={() => {
-      go(path)
-      setMenu(false)
-    }}
-  >
-    {label}
-  </button>
-))}
-
-<a
-  className='primary'
-  href='https://wa.me/2348101214336?text=Hello%20Pink%20Sky%2C%20I%20would%20like%20to%20book%20an%20appointment.%20Please%20send%20me%20the%20available%20services%2C%20times%2C%20prices%20and%20booking%20details.%20Thank%20you.'
-  target='_blank'
-  rel='noreferrer'
-  onClick={() => setMenu(false)}
->
-  <MessageCircle size={17} />
-  Book Appointment on WhatsApp
-</a>
-            </div>
+            ['Home',''],['Services','services'],['Beauty Shop','shop'],
+            ['Blog','blog'],['Locations','locations'],['Packages','programs'],
+          ].map(([label,path]) => (
+            <a key={label} href={path ? '/' + path : '/'} onClick={() => setMenu(false)}>{label}</a>
+          ))}
+          <button type='button' onClick={() => {setMenu(false);openBooking()}}>
+            <MessageCircle size={18}/> Book on WhatsApp
+          </button>
+        </nav>
       )}
     </>
   )
@@ -895,7 +758,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       <img
         src={
           settings.logo ||
-          './resources/pinksky-logo.jpg'
+          '/resources/pinksky-logo.jpg'
         }
         alt='Pinksky'
       />
@@ -920,215 +783,16 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
     </footer>
   )
 
-  const bookingModal = bookingOpen && (
-    <div className='modal-backdrop'>
-      <div className='booking-modal'>
-        <button
-          className='modal-close'
-          onClick={() => setBookingOpen(false)}
-        >
-          <X />
-        </button>
-
-        {!bookingResult ? (
-          <>
-            <span className='eyebrow'>
-              Book Pinksky
-            </span>
-
-            <h2>Request an appointment</h2>
-
-            <form onSubmit={submitBooking}>
-              <label>
-                Full name
-                <input
-                  required
-                  value={form.name}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      name: event.target.value,
-                    })
-                  }
-                />
-              </label>
-
-              <label>
-                Phone
-                <input
-                  required
-                  value={form.phone}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      phone: event.target.value,
-                    })
-                  }
-                />
-              </label>
-
-              <label>
-                Email
-                <input
-                  type='email'
-                  value={form.email}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      email: event.target.value,
-                    })
-                  }
-                />
-              </label>
-
-              <label>
-                Service
-                <select
-                  required
-                  value={form.service}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      service: event.target.value,
-                    })
-                  }
-                >
-                  <option value=''>
-                    Select service
-                  </option>
-
-                  {services.map(item => (
-                    <option
-                      key={item._id || item.slug}
-                      value={item.name}
-                    >
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label>
-                Location
-                <select
-                  required
-                  value={form.location}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      location: event.target.value,
-                    })
-                  }
-                >
-                  <option value=''>
-                    Select location
-                  </option>
-
-                  {locations.map(item => (
-                    <option
-                      key={item._id || item.slug}
-                      value={item.name}
-                    >
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label>
-                Preferred date
-                <input
-                  required
-                  type='date'
-                  value={form.preferredDate}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      preferredDate:
-                        event.target.value,
-                    })
-                  }
-                />
-              </label>
-
-              <label>
-                Preferred time
-                <select
-                  required
-                  value={form.preferredTime}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      preferredTime:
-                        event.target.value,
-                    })
-                  }
-                >
-                  <option value=''>Select</option>
-                  <option>Morning</option>
-                  <option>Afternoon</option>
-                  <option>Evening</option>
-                </select>
-              </label>
-
-              <label>
-                Notes
-                <textarea
-                  value={form.notes}
-                  onChange={event =>
-                    setForm({
-                      ...form,
-                      notes: event.target.value,
-                    })
-                  }
-                />
-              </label>
-
-              {bookingError && (
-                <p className='form-error'>
-                  {bookingError}
-                </p>
-              )}
-
-              <button
-                className='primary'
-                disabled={submitting}
-              >
-                {submitting
-                  ? 'Savingâ€¦'
-                  : 'Request appointment'}
-              </button>
-            </form>
-          </>
-        ) : (
-          <div className='success'>
-            <Check />
-
-            <h2>Request received</h2>
-
-            <p>
-              Your booking reference is{' '}
-              <strong>{bookingResult}</strong>.
-              Pinksky will confirm availability.
-            </p>
-
-            {whatsapp && (
-              <a
-                className='primary'
-                href={`${whatsapp}?text=${encodeURIComponent(
-                  `Hello Pinksky, I submitted a booking request. Ref: ${bookingResult}`,
-                )}`}
-                target='_blank'
-                rel='noreferrer'
-              >
-                Continue on WhatsApp
-              </a>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+  const bookingModal = bookingSelection && (
+    <BranchBookingModal
+      branches={pinkSkyBranches}
+      services={services.map(item => item.name)}
+      serviceName={bookingSelection.serviceName}
+      preferredBranchId={bookingSelection.preferredBranchId}
+      onClose={() => setBookingSelection(null)}
+    />
   )
+
      if (
     contentLoading &&
     ['service', 'product', 'article'].includes(route.type)
@@ -1168,7 +832,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
               <Img
                 src={
                   service.image ||
-                  './resources/pinksky-logo.jpg'
+                  '/resources/pinksky-logo.jpg'
                 }
                 alt={service.name}
                 priority
@@ -1221,6 +885,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
 
                   <ServiceWhatsAppLinks
                     serviceName={service.name}
+                    onBook={openBooking}
                   />
                 </div>
               </div>
@@ -1247,7 +912,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
               <SeoFaqSection value={service.seoFaqText}/>
               <h3>Book at your preferred Pinksky branch</h3>
               <p>Contact our team to confirm pricing, availability and appointment details.</p>
-              <ServiceWhatsAppLinks serviceName={service.name}/>
+              <ServiceWhatsAppLinks serviceName={service.name} onBook={openBooking}/>
             </section>
           </section>
           {services.some(item => item.slug !== service.slug) && (
@@ -1424,7 +1089,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   <Img
                     src={
                       item.image ||
-                      './resources/pinksky-logo.jpg'
+                      '/resources/pinksky-logo.jpg'
                     }
                     alt={item.name}
                   />
@@ -1440,7 +1105,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   View service <ArrowRight size={15} />
 </a>
 
-<ServiceWhatsAppLinks serviceName={item.name} />
+<ServiceWhatsAppLinks serviceName={item.name} onBook={openBooking} />
                   </div>
                 </article>
               ))}
@@ -1483,7 +1148,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   <Img
                     src={
                       item.images?.[0] ||
-                      './resources/pinksky-logo.jpg'
+                      '/resources/pinksky-logo.jpg'
                     }
                     alt={item.name}
                   />
@@ -1681,154 +1346,18 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   return (
     <div>
       {header}
-
-      <main>
-        <BannerCarousel banners={banners} />
-
-        <section className='hero'>
-          <div>
-            <span className='eyebrow'>
-              Pinksky Beauty & Wellness
-            </span>
-
-            <h1>
-              Your beauty journey starts with{' '}
-              <em>Pinksky.</em>
-            </h1>
-
-            <p>
-              Professional beauty and wellness
-              services across Warri & Effurun.
-            </p>
-
-            <div className='actions'>
-              <div className='hero-booking-options'>
-                <span>Book a Service - Choose Your Branch</span>
-                <ServiceWhatsAppLinks serviceName='an appointment' />
-              </div>
-
-              {whatsapp && (
-                <a
-                  className='secondary'
-                  href={whatsapp}
-                  target='_blank'
-                  rel='noreferrer'
-                >
-                  <MessageCircle size={17} /> WhatsApp
-                  Us
-                </a>
-              )}
-            </div>
-          </div>
-
-          <Img
-            src='./resources/pinksky-home-banner.jpg'
-            alt='Pinksky Beauty & Wellness'
-            priority
-          />
-        </section>
-
-        <section className='content'>
-          <span className='eyebrow'>
-            Important services
-          </span>
-
-          <h2>
-            Choose your next Pinksky experience.
-          </h2>
-
-          {services.length ? (
-            <div className='grid'>
-              {services.slice(0, 6).map(item => (
-                <article
-                  className='card'
-                  key={item._id || item.slug}
-                >
-                  <a className='service-card-link' href={'/service/' + item.slug}>
-                  <Img
-                    src={
-                      item.image ||
-                      './resources/pinksky-logo.jpg'
-                    }
-                    alt={item.name}
-                  />
-
-                  <div>
-                    <h3>{item.name}</h3>
-
-                    {item.short && (
-                      <p>{item.short}</p>
-                    )}
-                  </div>
-                </a>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <p>
-              No services are currently published.
-            </p>
-          )}
-        </section>
-
-        {reviews.length > 0 && (
-          <section className='content reviews'>
-            <span className='eyebrow'>
-              Customer reviews
-            </span>
-
-            <h2>What clients are saying.</h2>
-
-            <div className='review-grid'>
-              {reviews.map(review => (
-                <article key={review._id}>
-                  <div>
-                    {Array.from({
-                      length: review.rating || 5,
-                    }).map((_, index) => (
-                      <Star
-                        key={index}
-                        size={15}
-                      />
-                    ))}
-                  </div>
-
-                  <p>â€œ{review.text}â€</p>
-
-                  <strong>
-                    {review.customerName}
-                  </strong>
-
-                  {review.source && (
-                    <small>{review.source}</small>
-                  )}
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section className='content contact'>
-          <div>
-            <Phone />
-
-            <h2>Ready to book?</h2>
-
-            <p>
-              Call, WhatsApp or visit one of our
-              branches.
-            </p>
-          </div>
-
-          <button
-            className='primary'
-            onClick={() => openBooking()}
-          >
-            Book Appointment
-          </button>
-        </section>
-      </main>
-
+      <LuxeHomepage
+        promotion={banners.length > 0 ? <BannerCarousel banners={banners} /> : null}
+        services={services}
+        reviews={reviews}
+        products={products}
+        articles={articles}
+        locations={locations}
+        programs={programs}
+        loading={contentLoading}
+        instagram={settings.instagram}
+        onBook={openBooking}
+      />
       {footer}
       {bookingModal}
     </div>
