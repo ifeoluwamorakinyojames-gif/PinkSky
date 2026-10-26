@@ -3,6 +3,7 @@ import {PortableText} from '@portabletext/react'
 import AdminDashboard from './AdminDashboard'
 import LuxeHomepage from './LuxeExactHomepage'
 import BranchBookingModal from './BranchBookingModal'
+import {resolveBookingBranches, type BookingLocationRecord} from './bookingBranches'
 import './luxe-nav.css'
 import {
   ArrowLeft,
@@ -114,6 +115,9 @@ type Location = {
   phone?: string
   openingHours?: string[]
   image?: string
+  bookingBranchId?: string
+  whatsappNumbers?: string[]
+  active?: boolean
 }
 
 type Program = {
@@ -263,20 +267,7 @@ function BannerCarousel({banners}: {banners: Banner[]}) {
   )
 }
 
-const pinkSkyBranches = [
-  {
-    id: 'airport-road',
-    name: 'Airport Road, Warri',
-    address: 'Magnifique House, 67 Airport Road, near Union Bank, opposite Christ Embassy, Warri',
-    whatsappNumbers: ['08037416330', '08129147351'],
-  },
-  {
-    id: 'delta-mall',
-    name: 'ShopMall — Delta Mall, Effurun',
-    address: 'Shop 20/23, Delta Mall, Effurun, Delta State',
-    whatsappNumbers: ['09127118845', '08101214336'],
-  },
-] as const
+
 
 function ServiceWhatsAppLinks({
   serviceName,
@@ -783,9 +774,12 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
     </footer>
   )
 
+  const activeLocations = locations.filter(item => item.active !== false)
+  const bookingBranches = resolveBookingBranches(locations as BookingLocationRecord[])
+
   const bookingModal = bookingSelection && (
     <BranchBookingModal
-      branches={pinkSkyBranches}
+      branches={bookingBranches}
       services={services.map(item => item.name)}
       serviceName={bookingSelection.serviceName}
       preferredBranchId={bookingSelection.preferredBranchId}
@@ -1352,7 +1346,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
         reviews={reviews}
         products={products}
         articles={articles}
-        locations={locations}
+        locations={activeLocations}
         programs={programs}
         loading={contentLoading}
         instagram={settings.instagram}

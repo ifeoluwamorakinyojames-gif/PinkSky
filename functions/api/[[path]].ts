@@ -179,7 +179,7 @@ async function currentUser(request: Request, env: Env) {
 
 function cleanPayload(payload: any) {
   const out = {...payload}
-  for (const key of ['_id','_rev','_createdAt','_updatedAt','id']) delete out[key]
+  for (const key of ['_id','_rev','_createdAt','_updatedAt','_type','id','bookingReference']) delete out[key]
   if (typeof out.slug === 'string') out.slug = {_type: 'slug', current: out.slug}
   return out
 }
@@ -256,9 +256,10 @@ if (path === '/api/content' && method === 'GET') {
         "images": images[].asset->url
       }`),
 
-    client.fetch(`*[_type == "location" && active == true]
+    client.fetch(`*[_type == "location"]
       | order(order asc, name asc) {
         _id, name, "slug": slug.current, address, note, phone,
+        bookingBranchId, whatsappNumbers, active,
         openingHours, "image": image.asset->url
       }`),
 

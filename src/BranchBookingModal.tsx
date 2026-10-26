@@ -79,6 +79,11 @@ export default function BranchBookingModal({
             Your service: <strong>{serviceName}</strong>
           </div>}
         </div>
+        {ordered.length === 0 && (
+          <p className='pinksky-branch-note' role='status'>
+            Online booking is temporarily unavailable at both branches. Please contact Pinksky directly for assistance.
+          </p>
+        )}
         <div className='pinksky-branch-options'>
           {ordered.map(branch=>{
             const airport=branch.id==='airport-road'
