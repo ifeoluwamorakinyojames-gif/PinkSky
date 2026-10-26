@@ -256,9 +256,10 @@ if (path === '/api/content' && method === 'GET') {
         "images": images[].asset->url
       }`),
 
-    client.fetch(`*[_type == "location" && active == true]
+    client.fetch(`*[_type == "location"]
       | order(order asc, name asc) {
         _id, name, "slug": slug.current, address, note, phone,
+        bookingBranchId, whatsappNumbers, active,
         openingHours, "image": image.asset->url
       }`),
 
