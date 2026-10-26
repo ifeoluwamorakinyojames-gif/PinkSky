@@ -120,6 +120,25 @@ async function ensureSchema(env: Env) {
       created_at TEXT NOT NULL
     )`),
     env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_admin_sessions_user ON admin_sessions(user_id)`),
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS online_appointments (
+      id TEXT PRIMARY KEY,
+      reference TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      email TEXT NOT NULL DEFAULT '',
+      service TEXT NOT NULL,
+      branch_id TEXT NOT NULL,
+      location TEXT NOT NULL,
+      preferred_date TEXT NOT NULL,
+      preferred_time TEXT NOT NULL,
+      notes TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'requested',
+      internal_notes TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`),
+    env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_online_appointments_date
+      ON online_appointments(branch_id,preferred_date,preferred_time)`),
   ])
 }
 
@@ -314,18 +333,55 @@ const reviews = getResult<any[]>(7, [])
 }
 
     if (path === '/api/bookings' && method === 'POST') {
+      // Online appointment requests are stored privately in D1, never in a public CMS dataset.
+      if (Number(request.headers.get('content-length') || '0') > 16000) {
+        return json({error:'Booking request is too large.'},413,{'cache-control':'no-store'})
+      }
       const body = await parseJson(request)
-      const required = ['name','phone','service','location','preferredDate','preferredTime']
-      for (const key of required) if (!clean(body[key])) return json({error: `Missing ${key}`}, 400)
-      const client = sanity(env, true)
-      const doc = await client.create({
-        _type: 'booking',
-        name: clean(body.name,120), phone: clean(body.phone,60), email: clean(body.email,180),
-        service: clean(body.service,160), location: clean(body.location,200),
-        preferredDate: clean(body.preferredDate,30), preferredTime: clean(body.preferredTime,40),
-        notes: clean(body.notes,1500), status: 'requested', createdAt: new Date().toISOString(),
-      })
-      return json({id: doc._id, status: 'requested'}, 201)
+      if (clean(body.website)) return json({error:'Invalid booking submission.'},400,{'cache-control':'no-store'})
+      const name = clean(body.name,120)
+      const phone = clean(body.phone,25)
+      const email = clean(body.email,180)
+      const service = clean(body.service,160)
+      const branchId = clean(body.branchId,30)
+      const date = clean(body.preferredDate,30)
+      const time = clean(body.preferredTime,40)
+      const notes = clean(body.notes,1200)
+      const branch = {
+        'airport-road':'Airport Road, Warri',
+        'delta-mall':'ShopMall — Delta Mall, Effurun',
+      }[branchId]
+      if (!branch) return json({error:'Please select an available Pinksky branch.'},400,{'cache-control':'no-store'})
+      if (name.length < 2 || !/^[+0-9() -]{10,25}$/.test(phone) ||
+          phone.replace(/\D/g,'').length < 10 || !service || !date || !time) {
+        return json({error:'Please enter your name, valid phone, service, date and time.'},400,{'cache-control':'no-store'})
+      }
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return json({error:'Please enter a valid email address.'},400,{'cache-control':'no-store'})
+      }
+      const dateIsValid = /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+        !Number.isNaN(Date.parse(date)) && new Date(date+'T00:00:00Z').toISOString().slice(0,10) === date
+      if (!dateIsValid || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) {
+        return json({error:'Please choose a valid preferred date and time.'},400,{'cache-control':'no-store'})
+      }
+      const parts = new Intl.DateTimeFormat('en-GB',{
+        timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit',
+      }).formatToParts(new Date())
+      const part=(key:string)=>parts.find(item=>item.type===key)?.value || ''
+      const localToday=[part('year'),part('month'),part('day')].join('-')
+      const maxDate=new Date(Date.now()+1000*60*60*24*185).toISOString().slice(0,10)
+      if(date<localToday || date>maxDate) {
+        return json({error:'Please choose a date within the next six months.'},400,{'cache-control':'no-store'})
+      }
+      const id='appt_'+crypto.randomUUID()
+      const reference='PS-'+randomHex(5).toUpperCase()
+      const now=new Date().toISOString()
+      await env.DB.prepare(`INSERT INTO online_appointments
+        (id,reference,name,phone,email,service,branch_id,location,preferred_date,preferred_time,notes,status,created_at,updated_at)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,'requested',?,?)`)
+        .bind(id,reference,name,phone,email,service,branchId,branch,date,time,notes,now,now).run()
+      return json({reference,status:'requested',branchId,preferredDate:date,preferredTime:time},201,
+        {'cache-control':'no-store'})
     }
 
     if (path === '/api/admin/login' && method === 'POST') {
@@ -366,6 +422,42 @@ const reviews = getResult<any[]>(7, [])
 
     const user: any = await currentUser(request, env)
     if (!user) return json({error:'Please sign in to Pink Sky Admin.'}, 401)
+
+    if (path === '/api/admin/bookings' && method === 'GET') {
+      // This route is behind the staff session check above.
+      const rows=await env.DB.prepare(`SELECT
+        id AS _id, reference AS bookingReference, name,phone,email,service,
+        branch_id AS branchId,location,
+        preferred_date AS preferredDate,preferred_time AS preferredTime,
+        notes,status,internal_notes AS internalNotes,created_at AS createdAt
+        FROM online_appointments ORDER BY created_at DESC LIMIT 500`).all()
+      let legacy:any[]=[]
+      try {
+        legacy=await sanity(env,false).fetch(
+          '*[_type == "booking"] | order(_createdAt desc)[0...200]{...}',
+        )
+      } catch(error) {console.warn('Unable to fetch legacy Sanity bookings',error)}
+      return json([...(rows.results||[]),...legacy],200,{'cache-control':'no-store'})
+    }
+
+    if (path.startsWith('/api/admin/bookings/') && method === 'PUT') {
+      if (!canWrite(user.role)) return json({error:'This role is read-only.'},403)
+      const bookingId=decodeURIComponent(path.slice('/api/admin/bookings/'.length))
+      if (bookingId.startsWith('appt_')) {
+        const payload=await parseJson(request)
+        const status=clean(payload.status,30)
+        if (!['requested','contacted','confirmed','completed','cancelled'].includes(status)) {
+          return json({error:'Invalid booking status.'},400)
+        }
+        const internalNotes=clean(payload.internalNotes,1500)
+        const updated=await env.DB.prepare(`UPDATE online_appointments
+          SET status=?,internal_notes=?,updated_at=? WHERE id=?`)
+          .bind(status,internalNotes,new Date().toISOString(),bookingId).run()
+        if (!updated.meta?.changes) return json({error:'Appointment not found.'},404)
+        return json({id:bookingId,status,internalNotes})
+      }
+      // Older booking documents continue to use the existing Sanity admin handler below.
+    }
 
     if (path === '/api/admin/uploads' && method === 'POST') {
       if (!canWrite(user.role)) return json({error:'This role cannot upload images.'},403)
