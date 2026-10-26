@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState, type FormEvent} from 'react'
 import {PortableText} from '@portabletext/react'
 import AdminDashboard from './AdminDashboard'
-import LuxeHomepage from './LuxeHomepage'
+import LuxeHomepage from './LuxeExactHomepage'
 import {
   ArrowLeft,
   ArrowRight,
@@ -10,6 +10,7 @@ import {
   MapPin,
   Menu,
   MessageCircle,
+  Sparkles,
   Phone,
   Star,
   X,
@@ -805,91 +806,50 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
 
   const header = (
     <>
-      <div className='announcement'>
-        Two Pinksky locations in Warri & Effurun
+      <div className='announcement ft-site-announcement'>
+        <span>Pinksky Beauty & Wellness</span>
+        <span>Two studios in Warri & Effurun, Delta State</span>
       </div>
-
-      <header>
-        <a
-          className='logo-button'
-          href='/'
-        >
-          <img
-            src={
-              settings.logo ||
-              '/resources/pinksky-logo.jpg'
-            }
-            alt='Pinksky'
-          />
-        </a>
-
-        <nav aria-label='Main navigation'>
+      <header className='ft-site-header'>
+        <nav className='ft-site-nav ft-nav-first' aria-label='Main left navigation'>
           <a href='/'>Home</a>
-          <a href='/services'>
-            Services
-          </a>
-          <a href='/shop'>
-            Beauty Shop
-          </a>
-          <a href='/blog'>
-            Blog
-          </a>
-          <a href='/locations'>
-            Locations
-          </a>
-          <a href='/programs'>
-            Packages
-          </a>
+          <a href='/services'>Services</a>
+          <a href='/shop'>Beauty Shop</a>
         </nav>
-
-        <button
-          className='primary'
-          onClick={() => openBooking()}
-        >
-          <CalendarDays size={16} /> Book
+        <a href='/' className='ft-nav-logo' aria-label='Pinksky Beauty & Wellness home'>
+          <img src={settings.logo || '/resources/pinksky-logo.jpg'} alt='Pinksky Beauty & Wellness' width={140} height={56}/>
+        </a>
+        <nav className='ft-site-nav ft-nav-second' aria-label='Main right navigation'>
+          <a href='/blog'>Blog</a>
+          <a href='/locations'>Locations</a>
+          <a href='/programs'>Packages</a>
+        </nav>
+        <button className='ft-nav-book' type='button' onClick={() => openBooking()}>
+          <Sparkles size={17} aria-hidden='true'/> Book Now
         </button>
-
         <button
-          className='menu-button'
+          className='ft-nav-menu'
           type='button'
           aria-label={menu ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={menu}
+          aria-controls='ft-mobile-menu'
           onClick={() => setMenu(value => !value)}
         >
-          {menu ? <X /> : <Menu />}
+          {menu ? <X size={24}/> : <Menu size={24}/>}
         </button>
       </header>
-
       {menu && (
-        <div className='mobile-menu'>
+        <nav id='ft-mobile-menu' className='ft-mobile-menu' aria-label='Mobile navigation'>
           {[
-  ['Home', ''],
-  ['Services', 'services'],
-  ['Shop', 'shop'],
-  ['Locations', 'locations'],
-].map(([label, path]) => (
-  <button
-    key={label}
-    onClick={() => {
-      go(path)
-      setMenu(false)
-    }}
-  >
-    {label}
-  </button>
-))}
-
-<a
-  className='primary'
-  href='https://wa.me/2348101214336?text=Hello%20Pink%20Sky%2C%20I%20would%20like%20to%20book%20an%20appointment.%20Please%20send%20me%20the%20available%20services%2C%20times%2C%20prices%20and%20booking%20details.%20Thank%20you.'
-  target='_blank'
-  rel='noreferrer'
-  onClick={() => setMenu(false)}
->
-  <MessageCircle size={17} />
-  Book Appointment on WhatsApp
-</a>
-            </div>
+            ['Home',''],['Services','services'],['Beauty Shop','shop'],
+            ['Blog','blog'],['Locations','locations'],['Packages','programs'],
+          ].map(([label,path]) => (
+            <a key={label} href={path ? '/' + path : '/'} onClick={() => setMenu(false)}>{label}</a>
+          ))}
+          <button type='button' onClick={() => {setMenu(false);openBooking()}}>
+            <MessageCircle size={18}/> Book on WhatsApp
+          </button>
+        </nav>
       )}
     </>
   )
@@ -1694,6 +1654,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
         locations={locations}
         programs={programs}
         loading={contentLoading}
+        instagram={settings.instagram}
         onBook={openBooking}
       />
       {footer}
