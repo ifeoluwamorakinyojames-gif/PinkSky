@@ -2,6 +2,7 @@ import {useEffect, useMemo, useState, type FormEvent} from 'react'
 import {PortableText} from '@portabletext/react'
 import AdminDashboard from './AdminDashboard'
 import LuxeHomepage from './LuxeExactHomepage'
+import './luxe-nav.css'
 import {
   ArrowLeft,
   ArrowRight,
