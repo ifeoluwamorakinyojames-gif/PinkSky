@@ -281,6 +281,7 @@ function Editor({
       </>}
 
       {section==='bookings' && <>
+        <div className='admin-form-grid'><Field label='Booking reference'><input value={form.bookingReference||form._id||''} readOnly/></Field><Field label='Booking source'><input value={form.branchId ? 'Online appointment' : 'Existing booking'} readOnly/></Field></div>
         <div className='admin-form-grid'><Field label='Customer name'><input value={form.name||''} readOnly/></Field><Field label='Phone'><input value={form.phone||''} readOnly/></Field></div>
         <div className='admin-form-grid'><Field label='Email'><input value={form.email||''} readOnly/></Field><Field label='Service'><input value={form.service||''} readOnly/></Field></div>
         <div className='admin-form-grid'><Field label='Location'><input value={form.location||''} readOnly/></Field><Field label='Preferred date'><input value={form.preferredDate||''} readOnly/></Field></div>
@@ -409,7 +410,7 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
         {loadError&&<div className='admin-error admin-page-error'>{loadError}</div>}
         {!loading&&!loadError&&section==='settings'&&items.length===0&&<button className='admin-primary' onClick={()=>setSelected({_new:true,businessName:'Pinksky Beauty & Wellness',tagline:'Beauty from within.'})}>Create website settings</button>}
         {!loading&&!loadError&&section!=='settings'&&<div className='admin-table-wrap'><table className='admin-table'><thead><tr><th>Name / Title</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>
-          {items.length===0?<tr><td colSpan={4} className='admin-empty'>No records yet.</td></tr>:items.map((item,index)=><tr key={item._id||item.id||index}><td><strong>{item.name||item.title||item.customerName||item.email||'Untitled'}</strong><span>{item.slug?.current||item.service||item.role||''}</span></td><td><span className='admin-status'>{item.status||(item.published===false?'Hidden':'Published')}</span></td><td>{item._updatedAt?new Date(item._updatedAt).toLocaleDateString():'—'}</td><td><button className='admin-text-button' onClick={()=>setSelected(item)}>{canWrite(user.role)?'Edit':'View'}</button></td></tr>)}
+          {items.length===0?<tr><td colSpan={4} className='admin-empty'>No records yet.</td></tr>:items.map((item,index)=><tr key={item._id||item.id||index}><td><strong>{item.name||item.title||item.customerName||item.email||'Untitled'}</strong><span>{item.bookingReference||item.slug?.current||item.service||item.role||''}</span></td><td><span className='admin-status'>{item.status||(item.published===false?'Hidden':'Published')}</span></td><td>{item._updatedAt||item.createdAt ? new Date(item._updatedAt||item.createdAt).toLocaleDateString() : '—'}</td><td><button className='admin-text-button' onClick={()=>setSelected(item)}>{canWrite(user.role)?'Edit':'View'}</button></td></tr>)}
         </tbody></table></div>}
       </section>}
     </main>
