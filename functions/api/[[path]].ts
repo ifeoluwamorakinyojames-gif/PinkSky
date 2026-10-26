@@ -347,10 +347,11 @@ const reviews = getResult<any[]>(7, [])
       const date = clean(body.preferredDate,30)
       const time = clean(body.preferredTime,40)
       const notes = clean(body.notes,1200)
-      const branch = {
-        'airport-road':'Airport Road, Warri',
-        'delta-mall':'ShopMall — Delta Mall, Effurun',
-      }[branchId]
+      const branch = branchId === 'airport-road'
+        ? 'Airport Road, Warri'
+        : branchId === 'delta-mall'
+        ? 'ShopMall — Delta Mall, Effurun'
+        : ''
       if (!branch) return json({error:'Please select an available Pinksky branch.'},400,{'cache-control':'no-store'})
       if (name.length < 2 || !/^[+0-9() -]{10,25}$/.test(phone) ||
           phone.replace(/\D/g,'').length < 10 || !service || !date || !time) {
