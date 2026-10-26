@@ -267,16 +267,14 @@ const pinkSkyBranches = [
   {
     id: 'airport-road',
     name: 'Airport Road, Warri',
-    whatsapp: '2348120147351',
-    address:
-      'Magnifique House, 67 Airport Road, near Union Bank, opposite Christ Embassy, Warri',
-    otherPhone: '08037416330',
+    address: 'Magnifique House, 67 Airport Road, near Union Bank, opposite Christ Embassy, Warri',
+    whatsappNumbers: ['08037416330', '08129147351'],
   },
   {
     id: 'delta-mall',
-    name: 'Delta Mall, Effurun',
-    whatsapp: '2348101214336',
+    name: 'ShopMall — Delta Mall, Effurun',
     address: 'Shop 20/23, Delta Mall, Effurun, Delta State',
+    whatsappNumbers: ['09127118845', '08101214336'],
   },
 ] as const
 
@@ -788,6 +786,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   const bookingModal = bookingSelection && (
     <BranchBookingModal
       branches={pinkSkyBranches}
+      services={services.map(item => item.name)}
       serviceName={bookingSelection.serviceName}
       preferredBranchId={bookingSelection.preferredBranchId}
       onClose={() => setBookingSelection(null)}
