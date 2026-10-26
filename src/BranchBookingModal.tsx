@@ -1,60 +1,40 @@
-import {useEffect, useRef} from 'react'
-import {ArrowRight, ExternalLink, MapPin, MessageCircle, X} from 'lucide-react'
+import {useEffect, useRef, useState} from 'react'
+import {ArrowLeft, ArrowRight, ExternalLink, MapPin, MessageCircle, X} from 'lucide-react'
+import OnlineAppointmentForm, {whatsappUrl, type BookingBranch} from './OnlineAppointmentForm'
 import './branch-booking.css'
 
-export type PinkskyBookingBranch = {
-  readonly id: string
-  readonly name: string
-  readonly address: string
-  readonly whatsapp: string
-}
-
-type BranchBookingModalProps = {
-  branches: readonly PinkskyBookingBranch[]
+type Props = {
+  branches: readonly BookingBranch[]
   serviceName: string
   preferredBranchId?: string | null
+  services: string[]
   onClose: () => void
 }
 
-function branchDisplayName(branch: PinkskyBookingBranch): string {
-  return branch.id === 'delta-mall' ? 'ShopMall — Delta Mall, Effurun' : branch.name
-}
-
-function bookingMessage(serviceName: string, branch: PinkskyBookingBranch) {
-  return (
-    'Hello Pinksky Beauty & Wellness, I would like to book ' +
-    serviceName +
-    ' at your ' +
-    branchDisplayName(branch) +
-    ' branch. Please confirm available dates/times, current price and how to complete my booking. Thank you.'
-  )
-}
-
 export default function BranchBookingModal({
-  branches,
-  serviceName,
-  preferredBranchId,
-  onClose,
-}: BranchBookingModalProps) {
+  branches, serviceName, preferredBranchId, services, onClose,
+}: Props) {
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null)
+  const selectedBranch = branches.find(branch => branch.id === selectedBranchId)
   const dialog = useRef<HTMLDivElement>(null)
   const closeButton = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     closeButton.current?.focus()
 
-    const onKeyDown = (event: KeyboardEvent) => {
+    const keydown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault()
         onClose()
         return
       }
       if (event.key !== 'Tab' || !dialog.current) return
-      const elements = Array.from(dialog.current.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      )).filter(el => el.getClientRects().length > 0)
+      const elements = [...dialog.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )].filter(el => el.getClientRects().length > 0 && el.getAttribute('aria-hidden') !== 'true')
       if (!elements.length) return
       const first = elements[0]
       const last = elements[elements.length - 1]
@@ -66,103 +46,77 @@ export default function BranchBookingModal({
         first.focus()
       }
     }
-    document.addEventListener('keydown', onKeyDown)
+    document.addEventListener('keydown', keydown)
     return () => {
+      document.removeEventListener('keydown', keydown)
       document.body.style.overflow = previousOverflow
-      document.removeEventListener('keydown', onKeyDown)
-      previouslyFocused?.focus()
+      previousFocus?.focus()
     }
   }, [onClose])
 
-  const orderedBranches = [...branches].sort((a, b) =>
-    a.id === preferredBranchId ? -1 : b.id === preferredBranchId ? 1 : 0,
+  const ordered = [...branches].sort((a,b)=>
+    a.id===preferredBranchId?-1:b.id===preferredBranchId?1:0,
   )
 
-  return (
-    <div
-      className='pinksky-branch-overlay'
-      onMouseDown={event => {if (event.target === event.currentTarget) onClose()}}
-    >
-      <div
-        className='pinksky-branch-dialog'
-        ref={dialog}
-        role='dialog'
-        aria-modal='true'
-        aria-labelledby='pinksky-branch-title'
-        aria-describedby='pinksky-branch-description'
-      >
-        <button
-          ref={closeButton}
-          type='button'
-          className='pinksky-branch-close'
-          aria-label='Close branch selection'
-          onClick={onClose}
-        >
-          <X size={22} aria-hidden='true'/>
-        </button>
+  return <div className='pinksky-branch-overlay'
+    onMouseDown={event=>{if(event.target===event.currentTarget)onClose()}}>
+    <div className='pinksky-branch-dialog' ref={dialog} role='dialog' aria-modal='true'
+      aria-labelledby={selectedBranch?'pinksky-online-title':'pinksky-branch-title'}
+      aria-describedby={selectedBranch?undefined:'pinksky-branch-description'}>
+      <button ref={closeButton} type='button' className='pinksky-branch-close'
+        aria-label='Close booking' onClick={onClose}><X size={22}/></button>
+      {selectedBranch ? (
+        <OnlineAppointmentForm branch={selectedBranch} services={services}
+          initialService={serviceName} onBack={()=>setSelectedBranchId(null)}/>
+      ) : <>
         <div className='pinksky-branch-heading'>
-          <span className='pinksky-branch-step'>BOOKING · STEP 1 OF 2</span>
-          <h2 id='pinksky-branch-title'>Which Pinksky branch is closest to you?</h2>
+          <span className='pinksky-branch-step'>BOOK APPOINTMENT · STEP 1 OF 2</span>
+          <h2 id='pinksky-branch-title'>Which Pinksky branch is closer to you?</h2>
           <p id='pinksky-branch-description'>
-            Choose the location most convenient for you. We will connect you to that
-            branch on WhatsApp so you can confirm your appointment.
+            Select your preferred branch to book online. Or contact that location directly on its own WhatsApp number.
           </p>
-          {serviceName !== 'an appointment' && (
-            <div className='pinksky-branch-service'>
-              Your service: <strong>{serviceName}</strong>
-            </div>
-          )}
+          {serviceName !== 'an appointment' && <div className='pinksky-branch-service'>
+            Your service: <strong>{serviceName}</strong>
+          </div>}
         </div>
         <div className='pinksky-branch-options'>
-          {orderedBranches.map(branch => {
-            const isAirport = branch.id === 'airport-road'
-            const displayName = isAirport ? 'Airport Road' : 'ShopMall'
-            const locality = isAirport ? 'Warri, Delta State' : 'Delta Mall, Effurun'
-            const whatsappLink = 'https://wa.me/' + branch.whatsapp +
-              '?text=' + encodeURIComponent(bookingMessage(serviceName, branch))
-            const mapLink = 'https://www.google.com/maps/search/?api=1&query=' +
-              encodeURIComponent(branch.address)
-            return (
-              <article
-                key={branch.id}
-                className={'pinksky-branch-option' + (branch.id === preferredBranchId ? ' pinksky-branch-preferred' : '')}
-              >
-                <div className='pinksky-branch-option-header'>
-                  <span className='pinksky-branch-pin'><MapPin size={22} aria-hidden='true'/></span>
-                  <div>
-                    <h3>{displayName}</h3>
-                    <span>{locality}</span>
-                  </div>
-                  {branch.id === preferredBranchId && (
-                    <span className='pinksky-branch-selected'>Previously selected</span>
-                  )}
-                </div>
-                <p className='pinksky-branch-address'>{branch.address}</p>
-                <a
-                  className='pinksky-branch-choose'
-                  href={whatsappLink}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  onClick={onClose}
-                  aria-label={'Book at ' + displayName + ' via WhatsApp'}
-                >
-                  <MessageCircle size={19} aria-hidden='true'/>
-                  Book at {displayName}
-                  <ArrowRight size={18} aria-hidden='true'/>
-                </a>
-                <a className='pinksky-branch-map' href={mapLink} target='_blank' rel='noopener noreferrer'>
-                  View location on map <ExternalLink size={14} aria-hidden='true'/>
-                </a>
-              </article>
-            )
+          {ordered.map(branch=>{
+            const airport=branch.id==='airport-road'
+            const label=airport?'Airport Road':'ShopMall'
+            const locality=airport?'Warri, Delta State':'Delta Mall, Effurun'
+            const map='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(branch.address)
+            const message='Hello Pinksky Beauty & Wellness, I would like to book '+
+              serviceName+' at your '+label+' ('+locality+') branch. Please send available times and prices. Thank you.'
+            return <article key={branch.id} className={'pinksky-branch-option'+
+              (preferredBranchId===branch.id?' pinksky-branch-preferred':'')}>
+              <div className='pinksky-branch-option-header'>
+                <span className='pinksky-branch-pin'><MapPin size={22}/></span>
+                <div><h3>{label}</h3><span>{locality}</span></div>
+                {preferredBranchId===branch.id&&<span className='pinksky-branch-selected'>Your choice</span>}
+              </div>
+              <p className='pinksky-branch-address'>{branch.address}</p>
+              <button type='button' className='pinksky-branch-choose'
+                onClick={()=>setSelectedBranchId(branch.id)}>
+                <ArrowRight size={18}/> Book Online at {label}
+              </button>
+              <div className='pinksky-branch-direct'>
+                <span>Or WhatsApp this branch:</span>
+                {branch.whatsappNumbers.map(number=><a key={number}
+                  href={whatsappUrl(number,message)} target='_blank' rel='noopener noreferrer'
+                  onClick={onClose}>
+                  <MessageCircle size={16}/> {number}
+                </a>)}
+              </div>
+              <a className='pinksky-branch-map' href={map} target='_blank' rel='noopener noreferrer'>
+                View on map <ExternalLink size={14}/></a>
+            </article>
           })}
         </div>
         <p className='pinksky-branch-note'>
-          <MessageCircle size={16} aria-hidden='true'/>
-          Selecting a branch opens WhatsApp with your request prepared. An appointment
-          is confirmed only after the branch replies with an available time.
+          <MessageCircle size={16}/>
+          Online requests are saved in Pinksky's booking dashboard. Our staff will confirm date and time availability.
         </p>
-      </div>
+      </>}
     </div>
-  )
+  </div>
 }
