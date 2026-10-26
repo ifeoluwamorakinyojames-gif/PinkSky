@@ -5,6 +5,8 @@ import {
   Star, Trash2, Upload, Users, X
 } from 'lucide-react'
 import {adminApi, AdminSession, AdminUser} from './admin/api'
+import BookingDesk from './admin/BookingDesk'
+import {defaultBookingBranches,getBookingBranchId,validateWhatsappNumber} from './bookingBranches'
 
 type Section =
   | 'dashboard' | 'settings' | 'services' | 'products' | 'banners' | 'blog'
@@ -17,7 +19,7 @@ const sectionMeta: Record<Section, {label: string; icon: any; resource?: string}
   products: {label: 'Products', icon: Package, resource: 'products'},
   banners: {label: 'Rollover Banners', icon: ImageIcon, resource: 'banners'},
   blog: {label: 'Blog', icon: FileText, resource: 'articles'},
-  bookings: {label: 'Bookings', icon: CalendarDays, resource: 'bookings'},
+  bookings: {label: 'Appointments & Bookings', icon: CalendarDays, resource: 'bookings'},
   locations: {label: 'Locations', icon: MapPin, resource: 'locations'},
   programs: {label: 'Memberships, Packages & Gift Cards', icon: Gift, resource: 'programs'},
   reviews: {label: 'Reviews', icon: Star, resource: 'reviews'},
@@ -121,6 +123,14 @@ function Editor({
       }
       if(section==='blog' && typeof payload.bodyText==='string'){
         payload.body=plainToPortableText(payload.bodyText); delete payload.bodyText
+      }
+      if(section==='locations') {
+        const values:Array<string>=Array.isArray(payload.whatsappNumbers)?payload.whatsappNumbers:[]
+        const configured=values.map(x=>String(x).trim()).filter(Boolean)
+        if(configured.some(number=>!validateWhatsappNumber(number))){
+          throw new Error('WhatsApp numbers must be valid Nigerian mobile numbers (e.g. 08129147351).')
+        }
+        payload.whatsappNumbers=configured
       }
       if(section==='team' && !payload.password && !isNew) delete payload.password
       const result=isNew?await adminApi.save(resource,payload):await adminApi.update(resource,record._id||record.id,payload)
@@ -258,7 +268,22 @@ function Editor({
         <Field label='Location name'><input value={form.name||''} onChange={e=>set('name',e.target.value)}/></Field>
         <Field label='Slug'><input value={form.slug?.current||form.slug||''} onChange={e=>set('slug',e.target.value)}/></Field>
         <Field label='Address'><textarea rows={3} value={form.address||''} onChange={e=>set('address',e.target.value)}/></Field>
-        <div className='admin-form-grid'><Field label='Branch note'><input value={form.note||''} onChange={e=>set('note',e.target.value)}/></Field><Field label='Branch phone'><input value={form.phone||''} onChange={e=>set('phone',e.target.value)}/></Field></div>
+        <div className='admin-form-grid'><Field label='Branch note'><input value={form.note||''} onChange={e=>set('note',e.target.value)}/></Field><Field label='Main phone'><input value={form.phone||''} onChange={e=>set('phone',e.target.value)}/></Field></div>
+        <Field label='Online booking branch' hint='Assign this location to Airport Road or ShopMall. This controls the branch in the online booking chooser.'>
+          <select value={form.bookingBranchId||getBookingBranchId(form)||''} onChange={e=>set('bookingBranchId',e.target.value)}>
+            <option value=''>Not a booking branch</option>
+            <option value='airport-road'>Airport Road — Warri</option>
+            <option value='delta-mall'>ShopMall — Delta Mall, Effurun</option>
+          </select>
+        </Field>
+        <Field label='Branch WhatsApp numbers' hint='One phone per line. These appear as separate WhatsApp buttons in the customer booking chooser.'>
+          <textarea rows={4} value={arrText(form.whatsappNumbers)} onChange={e=>set('whatsappNumbers',lines(e.target.value))} placeholder='08037416330&#10;08129147351'/>
+        </Field>
+        <div className='booking-location-whatsapp'>
+          {(form.whatsappNumbers||[]).map((number:string) => validateWhatsappNumber(number)
+            ? <a key={number} target='_blank' rel='noopener noreferrer' href={'https://wa.me/'+(number.replace(/\\D/g,'').startsWith('0')?'234'+number.replace(/\\D/g,'').slice(1):number.replace(/\\D/g,''))}>Test WhatsApp {number}</a>
+            : <span key={number} style={{color:'#b42342'}}>Invalid number: {number}</span>)}
+        </div>
         <Field label='Opening hours' hint='One line per day or schedule'><textarea rows={5} value={arrText(form.openingHours)} onChange={e=>set('openingHours',lines(e.target.value))}/></Field>
         <ImageUpload label='Branch image' current={form.image} onUploaded={img=>set('image',img)}/>
         <div className='admin-form-grid'><Field label='Display order'><input type='number' value={form.order??0} onChange={e=>set('order',Number(e.target.value))}/></Field><Toggle label='Active' checked={form.active!==false} onChange={v=>set('active',v)}/></div>
@@ -333,7 +358,7 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
   const user=session?.authenticated?session.user:null
 
   async function loadCurrent() {
-    if(!user||section==='dashboard'){setItems([]);return}
+    if(!user||section==='dashboard'||section==='bookings'){setItems([]);return}
     if(section==='team'&&!canManageTeam(user.role)){setSection('dashboard');return}
     const resource=sectionMeta[section].resource;if(!resource)return
     setLoading(true);setLoadError('')
@@ -402,10 +427,19 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
       {section==='dashboard'?<section className='admin-dashboard-home'>
         <div className='admin-welcome-card'><div><span className='admin-kicker'>Welcome back</span><h2>{user.name||user.email}</h2><p>Manage the website from this dashboard. Sanity remains behind the scenes.</p></div><ShieldCheck size={48}/></div>
         <div className='admin-quick-grid'>{visibleSections.filter(x=>x!=='dashboard'&&x!=='team').map(key=>{const item=sectionMeta[key],I=item.icon;return <button key={key} onClick={()=>setSection(key)}><I/><strong>{item.label}</strong><span>Open section</span></button>})}</div>
-      </section>:<section className='admin-resource-page'>
+      </section>:section==='bookings'?<BookingDesk user={user}/>:<section className='admin-resource-page'>
         <div className='admin-resource-toolbar'><div><span className='admin-kicker'>Manage</span><h2>{meta.label}</h2></div>
           {canWrite(user.role)&&section!=='bookings'&&section!=='settings'&&<button className='admin-primary' onClick={()=>setSelected({_new:true,published:true,active:true})}>+ Add new</button>}
         </div>
+        {section==='locations'&&<div className='booking-location-advice'>
+          <strong>Branch booking contacts:</strong> Edit each branch to manage its two WhatsApp numbers, address, opening hours, and Active status. The online booking page reads these settings automatically.
+          If a branch is marked inactive, customers cannot select it.
+        </div>}
+        {section==='locations'&&canWrite(user.role)&&<div className='booking-locations-shortcuts'>
+          {defaultBookingBranches.filter(b=>!items.some(item=>getBookingBranchId(item)===b.id)).map(b=><button key={b.id} type='button' className='admin-secondary' onClick={()=>setSelected({_new:true,name:b.name,slug:b.id,address:b.address,bookingBranchId:b.id,phone:b.whatsappNumbers[0],whatsappNumbers:b.whatsappNumbers,active:true,order:b.id==='airport-road'?1:2})}>
+            <MapPin size={17}/> Set up {b.id==='airport-road'?'Airport Road':'ShopMall'}
+          </button>)}
+        </div>}
         {loading&&<div className='admin-state'><Loader2 className='spin'/> Loading…</div>}
         {loadError&&<div className='admin-error admin-page-error'>{loadError}</div>}
         {!loading&&!loadError&&section==='settings'&&items.length===0&&<button className='admin-primary' onClick={()=>setSelected({_new:true,businessName:'Pinksky Beauty & Wellness',tagline:'Beauty from within.'})}>Create website settings</button>}
