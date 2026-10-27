@@ -469,8 +469,10 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       ? `${product.name} | Pinksky Beauty Shop`
       : article
         ? `${article.seoTitle || article.title} | Pinksky`
-        : settings.seoTitle ||
-          'Pinksky Beauty & Wellness | Warri & Effurun'
+        : route.type === 'reviews'
+          ? 'Customer Reviews & Star Ratings | Pinksky Beauty Warri & Effurun'
+          : settings.seoTitle ||
+            'Pinksky Beauty & Wellness | Warri & Effurun'
 
   const description = service
     ? service.metaDescription ||
@@ -478,8 +480,10 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
       service.description ||
       `${service.name} at Pinksky Beauty & Wellness in Warri and Effurun, Delta State.`
     : article?.metaDescription ||
-      settings.metaDescription ||
-      'Pinksky Beauty & Wellness in Warri and Effurun, Delta State.'
+      (route.type === 'reviews'
+        ? 'Read real Pinksky Beauty & Wellness customer reviews and 1–5 star ratings for salon, spa and beauty services in Warri and Effurun. Share your experience.'
+        : settings.metaDescription ||
+          'Pinksky Beauty & Wellness in Warri and Effurun, Delta State.')
 
   document.title = title
 
