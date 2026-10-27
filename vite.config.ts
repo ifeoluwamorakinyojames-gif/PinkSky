@@ -7,7 +7,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/admin': { target: 'http://localhost:8788', changeOrigin: true },
-      '/api/bookings': { target: 'http://localhost:8788', changeOrigin: true }
+      '/api/bookings': { target: 'http://localhost:8788', changeOrigin: true },
+      '/api/reviews': { target: 'http://localhost:8788', changeOrigin: true }
     }
   },
   build: {
