@@ -1,6 +1,7 @@
 import {useEffect, useMemo, useState} from 'react'
 import {PortableText} from '@portabletext/react'
 import AdminDashboard from './AdminDashboard'
+import ReviewsPage from './ReviewsPage'
 import LuxeHomepage from './LuxeExactHomepage'
 import BranchBookingModal from './BranchBookingModal'
 import {resolveBookingBranches, type BookingLocationRecord} from './bookingBranches'
@@ -135,6 +136,9 @@ type Review = {
   text: string
   rating: number
   source?: string
+  service?: string
+  branchId?: string
+  _createdAt?: string
 }
 
 type Settings = {
@@ -711,6 +715,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
         </a>
         <nav className='ft-site-nav ft-nav-second' aria-label='Main right navigation'>
           <a href='/blog'>Blog</a>
+          <a href='/reviews'>Reviews</a>
           <a href='/locations'>Locations</a>
           <a href='/programs'>Packages</a>
         </nav>
@@ -732,7 +737,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
         <nav id='ft-mobile-menu' className='ft-mobile-menu' aria-label='Mobile navigation'>
           {[
             ['Home',''],['Services','services'],['Beauty Shop','shop'],
-            ['Blog','blog'],['Locations','locations'],['Packages','programs'],
+            ['Blog','blog'],['Reviews','reviews'],['Locations','locations'],['Packages','programs'],
           ].map(([label,path]) => (
             <a key={label} href={path ? '/' + path : '/'} onClick={() => setMenu(false)}>{label}</a>
           ))}
@@ -758,6 +763,8 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
         {settings.tagline ||
           'Beauty, wellness and confidence in Warri & Effurun.'}
       </p>
+
+      <p><a href='/reviews'>Customer Reviews ★★★★★</a> · <a href='/reviews#write-review'>Write a review</a></p>
 
       {phones.length > 0 && (
         <div>
@@ -1272,6 +1279,22 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           )}
         </main>
 
+        {footer}
+        {bookingModal}
+      </div>
+    )
+  }
+
+  if (route.type === 'reviews') {
+    return (
+      <div>
+        {header}
+        <ReviewsPage
+          reviews={reviews}
+          services={services.map(item => item.name)}
+          loading={contentLoading}
+          onBook={() => openBooking()}
+        />
         {footer}
         {bookingModal}
       </div>
