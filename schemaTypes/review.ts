@@ -9,6 +9,13 @@ export const review = defineType({
     defineField({name: 'text', title: 'Review', type: 'text', rows: 4, validation: r => r.required()}),
     defineField({name: 'rating', title: 'Rating', type: 'number', validation: r => r.min(1).max(5).integer()}),
     defineField({name: 'source', title: 'Source', type: 'string', description: 'Example: Google, Instagram, in-store'}),
+    defineField({name: 'service', title: 'Service (optional)', type: 'string'}),
+    defineField({name: 'branchId', title: 'Branch (optional)', type: 'string',
+      options: {list: [
+        {title: 'Airport Road, Warri', value: 'airport-road'},
+        {title: 'ShopMall, Effurun', value: 'delta-mall'},
+      ]},
+    }),
     defineField({name: 'published', title: 'Published', type: 'boolean', initialValue: false}),
     defineField({name: 'order', title: 'Display Order', type: 'number', initialValue: 100}),
   ],
