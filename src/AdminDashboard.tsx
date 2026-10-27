@@ -301,7 +301,16 @@ function Editor({
       {section==='reviews' && <>
         <Field label='Customer name'><input value={form.customerName||''} onChange={e=>set('customerName',e.target.value)}/></Field>
         <Field label='Review'><textarea rows={5} value={form.text||''} onChange={e=>set('text',e.target.value)}/></Field>
+        <div className='admin-form-grid'>
+          <Field label='Service (optional)'><input value={form.service||''} onChange={e=>set('service',e.target.value)} /></Field>
+          <Field label='Review branch'><select value={form.branchId||''} onChange={e=>set('branchId',e.target.value)}>
+            <option value=''>Not specified</option>
+            <option value='airport-road'>Airport Road, Warri</option>
+            <option value='delta-mall'>ShopMall, Effurun</option>
+          </select></Field>
+        </div>
         <div className='admin-form-grid'><Field label='Rating (1–5)'><input type='number' min='1' max='5' value={form.rating??5} onChange={e=>set('rating',Number(e.target.value))}/></Field><Field label='Source'><input value={form.source||''} onChange={e=>set('source',e.target.value)} placeholder='Google, Instagram, in-store'/></Field></div>
+        {!form.published && !isNew && <p style={{background:'#fff3f7',borderRadius:10,padding:12,color:'#784561',fontSize:13}}>Awaiting review: verify the content and star rating before publishing. The customer cannot publish this directly.</p>}
         <div className='admin-form-grid'><Field label='Display order'><input type='number' value={form.order??100} onChange={e=>set('order',Number(e.target.value))}/></Field><Toggle label='Published' checked={!!form.published} onChange={v=>set('published',v)}/></div>
       </>}
 

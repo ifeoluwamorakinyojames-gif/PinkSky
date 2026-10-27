@@ -139,6 +139,12 @@ async function ensureSchema(env: Env) {
     )`),
     env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_online_appointments_date
       ON online_appointments(branch_id,preferred_date,preferred_time)`),
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS review_submission_limits (
+      fingerprint TEXT NOT NULL,
+      submitted_at INTEGER NOT NULL
+    )`),
+    env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_review_limits
+      ON review_submission_limits (fingerprint,submitted_at)`),
   ])
 }
 
@@ -277,7 +283,7 @@ if (path === '/api/content' && method === 'GET') {
 
     client.fetch(`*[_type == "review" && published == true]
       | order(order asc, _createdAt desc) {
-        _id, customerName, text, rating, source
+        _id, customerName, text, rating, source, service, branchId, _createdAt
       }`)
   ])
 const names = [
@@ -332,6 +338,57 @@ const reviews = getResult<any[]>(7, [])
     reviews
   })
 }
+
+    if (path === '/api/reviews' && method === 'POST') {
+      // Public review submissions never set published=true: only staff can approve them.
+      if (Number(request.headers.get('content-length') || 0)>10000) {
+        return json({error:'Your review is too long.'},413,{'cache-control':'no-store'})
+      }
+      const contentType=request.headers.get('content-type')||''
+      if (!contentType.includes('application/json')) {
+        return json({error:'Please submit the review form.'},415,{'cache-control':'no-store'})
+      }
+      const body=await parseJson(request)
+      if (clean(body.website)) return json({error:'Unable to submit this review.'},400,{'cache-control':'no-store'})
+      const customerName=clean(body.customerName,80)
+      const feedback=clean(body.text,1200)
+      const rating=Number(body.rating)
+      const service=clean(body.service,160)
+      const branchId=clean(body.branchId,30)
+      if (customerName.length<2 || feedback.length<20 || feedback.length>1200 ||
+          !Number.isInteger(rating) || rating<1 || rating>5) {
+        return json({error:'Please enter your name, 1–5 stars, and a review of at least 20 characters.'},
+          400,{'cache-control':'no-store'})
+      }
+      if (branchId && branchId!=='airport-road' && branchId!=='delta-mall') {
+        return json({error:'Please choose a valid branch.'},400,{'cache-control':'no-store'})
+      }
+      // A hashed network fingerprint limits bulk submissions without storing raw IPs.
+      const ip=request.headers.get('CF-Connecting-IP')||''
+      const fingerprint=await hmacHex(env.PINKSKY_SESSION_SECRET||'pinksky-review-limit',
+        (ip||'unknown')+':'+(request.headers.get('user-agent')||'').slice(0,180))
+      const now=Date.now()
+      const limit=await env.DB.prepare(`SELECT COUNT(*) AS count FROM review_submission_limits
+        WHERE fingerprint=? AND submitted_at>?`).bind(fingerprint,now-60*60*1000).first()
+      if(Number(limit?.count||0)>=3) {
+        return json({error:'Too many recent review submissions. Please try again later.'},
+          429,{'cache-control':'no-store','retry-after':'3600'})
+      }
+      const doc=await sanity(env,true).create({
+        _type:'review',
+        customerName,
+        text:feedback,
+        rating,
+        service,
+        branchId:branchId||undefined,
+        source:'Website',
+        published:false,
+        order:100,
+      })
+      await env.DB.prepare(`INSERT INTO review_submission_limits
+        (fingerprint,submitted_at) VALUES (?,?)`).bind(fingerprint,now).run()
+      return json({received:true,moderation:'pending',id:doc._id},201,{'cache-control':'no-store'})
+    }
 
     if (path === '/api/bookings' && method === 'POST') {
       // Online appointment requests are stored privately in D1, never in a public CMS dataset.

@@ -214,6 +214,10 @@ export default function LuxeHomepage({promotion,services,reviews,products,articl
       </div>
     </section>}
 
+    <div className='ft-center' style={{padding:'5px 16px 45px'}}>
+      <ButtonLink href='/reviews' outline>Read Reviews & Rate Your Visit <Star size={17} aria-hidden='true'/></ButtonLink>
+    </div>
+
     {products.length>0&&<section className='ft-section ft-products'>
       <div className='ft-container'>
         <Heading kicker='Products We Love' title='The Beauty Edit' description='Discover the products available through Pinksky.'/>

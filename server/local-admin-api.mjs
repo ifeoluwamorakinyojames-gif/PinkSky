@@ -387,6 +387,33 @@ const server = http.createServer(async (req, res) => {
     }
 
 
+    if (url.pathname === '/api/reviews' && req.method === 'POST') {
+      if (!writeClient) return send(res, 503, {error: 'Review submissions are not configured in local development.'})
+      const payload=await readBody(req)
+      const customerName=String(payload.customerName||'').trim().slice(0,80)
+      const reviewText=String(payload.text||'').trim().slice(0,1200)
+      const rating=Number(payload.rating)
+      const branchId=String(payload.branchId||'')
+      const service=String(payload.service||'').trim().slice(0,160)
+      if(payload.website||customerName.length<2||reviewText.length<20||
+         !Number.isInteger(rating)||rating<1||rating>5||
+         (branchId&&!['airport-road','delta-mall'].includes(branchId))) {
+        return send(res,400,{error:'Enter a name, 1–5 stars and a review of at least 20 characters.'})
+      }
+      const created=await writeClient.create({
+        _type:'review',
+        customerName,
+        rating,
+        text:reviewText,
+        service,
+        branchId:branchId||undefined,
+        source:'Website',
+        published:false,
+        order:100,
+      })
+      return send(res,201,{received:true,moderation:'pending',id:created._id})
+    }
+
     if (url.pathname === '/api/bookings' && req.method === 'POST') {
       if (!writeClient) return send(res, 503, {error: 'Booking backend is not configured yet.'})
       const payload = await readBody(req)
