@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import {adminApi, AdminSession, AdminUser} from './admin/api'
 import BookingDesk from './admin/BookingDesk'
+import {ShareableLink} from './ShareableLink'
 import {defaultBookingBranches,getBookingBranchId,validateWhatsappNumber} from './bookingBranches'
 
 type Section =
@@ -111,6 +112,8 @@ function Editor({
   const readonly=!canWrite(user.role)
   const set=(key:string,value:any)=>setForm((x:any)=>({...x,[key]:value}))
   const title=form.name||form.title||form.customerName||form.email||(isNew?'New record':'Record')
+  const publicSlug=typeof form.slug==='string'?form.slug:form.slug?.current||''
+  const publicPath=section==='services'?'/service/'+publicSlug:section==='blog'?'/article/'+publicSlug:''
 
   async function save() {
     if(readonly) return
@@ -120,6 +123,12 @@ function Editor({
       delete payload._new
       if((section==='services'||section==='products'||section==='blog'||section==='locations') && !payload.slug){
         payload.slug=slugify(payload.name||payload.title||'')
+      }
+      if(section==='services'||section==='blog') {
+        const value=typeof payload.slug==='string'?payload.slug:payload.slug?.current||''
+        if(!/^[a-z0-9][a-z0-9-]{0,159}$/.test(value)){
+          throw new Error('Each service and blog post needs a URL slug (lowercase letters, numbers and hyphens).')
+        }
       }
       if(section==='blog' && typeof payload.bodyText==='string'){
         payload.body=plainToPortableText(payload.bodyText); delete payload.bodyText
@@ -159,6 +168,11 @@ function Editor({
       <button className='admin-drawer-close' onClick={onClose}><X/></button>
       <span className='admin-kicker'>{isNew?'Create':'Edit'}</span>
       <h2>{title}</h2>
+       {publicPath&&publicSlug&&<div className='booking-location-advice'>
+         <strong>Individual public link:</strong> https://pinkskybeauty.com{publicPath}
+         <ShareableLink href={publicPath} title={title} compact/>
+         {form.published===false&&<small>Publish this item before sharing it publicly.</small>}
+       </div>}
       {readonly && <div className='admin-security-note'><ShieldCheck size={17}/><span>Your role is read-only.</span></div>}
       {error && <div className='admin-error'>{error}</div>}
       {success && <div className='admin-success'>{success}</div>}
@@ -453,7 +467,14 @@ export default function AdminDashboard({onExit}: {onExit: () => void}) {
         {loadError&&<div className='admin-error admin-page-error'>{loadError}</div>}
         {!loading&&!loadError&&section==='settings'&&items.length===0&&<button className='admin-primary' onClick={()=>setSelected({_new:true,businessName:'Pinksky Beauty & Wellness',tagline:'Beauty from within.'})}>Create website settings</button>}
         {!loading&&!loadError&&section!=='settings'&&<div className='admin-table-wrap'><table className='admin-table'><thead><tr><th>Name / Title</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>
-          {items.length===0?<tr><td colSpan={4} className='admin-empty'>No records yet.</td></tr>:items.map((item,index)=><tr key={item._id||item.id||index}><td><strong>{item.name||item.title||item.customerName||item.email||'Untitled'}</strong><span>{item.bookingReference||item.slug?.current||item.service||item.role||''}</span></td><td><span className='admin-status'>{item.status||(item.published===false?'Hidden':'Published')}</span></td><td>{item._updatedAt||item.createdAt ? new Date(item._updatedAt||item.createdAt).toLocaleDateString() : '—'}</td><td><button className='admin-text-button' onClick={()=>setSelected(item)}>{canWrite(user.role)?'Edit':'View'}</button></td></tr>)}
+          {items.length===0?<tr><td colSpan={4} className='admin-empty'>No records yet.</td></tr>:items.map((item,index)=><tr key={item._id||item.id||index}><td><strong>{item.name||item.title||item.customerName||item.email||'Untitled'}</strong><span>{item.bookingReference||item.slug?.current||item.service||item.role||''}</span>
+          {(section==='services'||section==='blog')&&item.published!==false&&
+            (typeof item.slug==='string'?item.slug:item.slug?.current)&&
+            <ShareableLink
+              href={(section==='services'?'/service/':'/article/')+
+                (typeof item.slug==='string'?item.slug:item.slug.current)}
+              title={item.name||item.title||'Pinksky page'} compact/>}
+          </td><td><span className='admin-status'>{item.status||(item.published===false?'Hidden':'Published')}</span></td><td>{item._updatedAt||item.createdAt ? new Date(item._updatedAt||item.createdAt).toLocaleDateString() : '—'}</td><td><button className='admin-text-button' onClick={()=>setSelected(item)}>{canWrite(user.role)?'Edit':'View'}</button></td></tr>)}
         </tbody></table></div>}
       </section>}
     </main>

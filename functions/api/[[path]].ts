@@ -218,7 +218,7 @@ if (path === '/api/content' && method === 'GET') {
   const client = sanity(env, false)
 
   const results = await Promise.allSettled([
-    client.fetch(`*[_type == "service" && published == true] | order(order asc, name asc) {
+    client.fetch(`*[_type == "service" && published == true && defined(slug.current)] | order(order asc, name asc) {
   _id,
   name,
   "slug": slug.current,
@@ -246,7 +246,7 @@ if (path === '/api/content' && method === 'GET') {
         "src": image.asset->url, "image": image.asset->url
       }`),
 
-    client.fetch(`*[_type == "article" && published == true]
+    client.fetch(`*[_type == "article" && published == true && defined(slug.current)]
       | order(coalesce(publishedAt, _createdAt) desc) {
         _id, title, "slug": slug.current, intent, summary, body,
         seoTitle, metaDescription, seoKeyword, seoFaqText, authorName, publishedAt,
@@ -621,6 +621,18 @@ const asset = await sanity(env, true).assets.upload(
 
     if (method === 'POST' && !id) {
       const payload = cleanPayload(await parseJson(request))
+      if (resource === 'services' || resource === 'articles') {
+        const slug=typeof payload.slug?.current==='string'?payload.slug.current.trim():''
+        if (!/^[a-z0-9][a-z0-9-]{0,159}$/.test(slug)) {
+          return json({error:'A unique URL slug is required (lowercase letters, numbers, hyphens).'},400)
+        }
+        const existing=await client.fetch<string|null>(
+          '*[_type == $type && slug.current == $slug && _id != $id][0]._id',
+          {type,slug,id:id||''})
+        if (existing) {
+          return json({error:'This URL is already used by another '+(resource==='services'?'service':'blog post')+'. Choose a different slug.'},409)
+        }
+      }
       if (resource === 'settings') {
         const created = await client.createOrReplace({_id:'siteSettings',_type:'siteSettings',...payload})
         return json(created,201)
@@ -632,6 +644,18 @@ const asset = await sanity(env, true).assets.upload(
 
     if (method === 'PUT') {
       const payload = cleanPayload(await parseJson(request))
+      if (resource === 'services' || resource === 'articles') {
+        const slug=typeof payload.slug?.current==='string'?payload.slug.current.trim():''
+        if (!/^[a-z0-9][a-z0-9-]{0,159}$/.test(slug)) {
+          return json({error:'A unique URL slug is required (lowercase letters, numbers, hyphens).'},400)
+        }
+        const existing=await client.fetch<string|null>(
+          '*[_type == $type && slug.current == $slug && _id != $id][0]._id',
+          {type,slug,id:id||''})
+        if (existing) {
+          return json({error:'This URL is already used by another '+(resource==='services'?'service':'blog post')+'. Choose a different slug.'},409)
+        }
+      }
       if (resource === 'settings') return json(await client.createOrReplace({_id:'siteSettings',_type:'siteSettings',...payload}))
       return json(await client.patch(id).set(payload).commit())
     }
