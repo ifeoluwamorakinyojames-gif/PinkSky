@@ -1,12 +1,12 @@
 import {lazy, Suspense, useEffect, useMemo, useState} from 'react'
-import {PortableText} from '@portabletext/react'
+const ArticleBody = lazy(() => import('./ArticleBody'))
 const AdminDashboard = lazy(() => import('./AdminDashboard'))
 const ReviewsPage = lazy(() => import('./ReviewsPage'))
 const LuxeHomepage = lazy(() => import('./LuxeExactHomepage'))
 import {ShareableLink} from './ShareableLink'
 import {articlesForService,servicesForArticle,articlesForArticle} from './internalLinking'
 import {displayServicePrice, displayServiceDuration, displayServiceEyebrow, serviceHeroImage, isSmallSourceImage, originalImageDimensions, relatedServicesForService} from './servicePageHelpers'
-import BranchBookingModal from './BranchBookingModal'
+const BranchBookingModal = lazy(() => import('./BranchBookingModal'))
 import {resolveBookingBranches, type BookingLocationRecord} from './bookingBranches'
 import './luxe-nav.css'
 import './service-detail.css'
@@ -810,13 +810,15 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   )
 
   const bookingModal = bookingSelection && (
-    <BranchBookingModal
-      branches={bookingBranches}
-      services={services.map(item => item.name)}
-      serviceName={bookingSelection.serviceName}
-      preferredBranchId={bookingSelection.preferredBranchId}
-      onClose={() => setBookingSelection(null)}
-    />
+    <Suspense fallback={<div className='pinksky-booking-loading' role='status'>Opening branch booking…</div>}>
+      <BranchBookingModal
+        branches={bookingBranches}
+        services={services.map(item => item.name)}
+        serviceName={bookingSelection.serviceName}
+        preferredBranchId={bookingSelection.preferredBranchId}
+        onClose={() => setBookingSelection(null)}
+      />
+    </Suspense>
   )
 
      if (
@@ -1049,7 +1051,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
 
           <div className='article-body'>
             {article.body?.length ? (
-              <PortableText value={article.body} />
+              <Suspense fallback={<p role='status'>Loading article…</p>}><ArticleBody body={article.body}/></Suspense>
             ) : (
               <p>
                 More details will be added by Pink
