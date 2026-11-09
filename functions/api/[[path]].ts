@@ -235,6 +235,7 @@ if (path === '/api/content' && method === 'GET') {
   seoTitle,
   metaDescription,
   "image": heroImage.asset->url + "?w=960&fm=webp&q=75",
+  "imageAlt": heroImage.alt,
   "gallery": gallery[].asset->url + "?w=800&fm=webp&q=75"
 }`),
 

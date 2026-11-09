@@ -1,0 +1,73 @@
+/* Pinksky service-page redesign. One readable sales path, no duplicate descriptions.
+   Deliberately isolated from products, blog pages and Admin. */
+.pinksky-service-detail{background:#fffcfd;color:#362333}
+.pinksky-service-detail .pinksky-service-page{width:min(1240px,calc(100% - 64px));margin:0 auto;padding:38px 0 46px}
+.pinksky-service-detail .pinksky-breadcrumb{margin-bottom:32px;gap:10px;align-items:center;line-height:1.5}
+.pinksky-service-hero-grid{display:grid;grid-template-columns:minmax(0,.96fr) minmax(0,1fr);gap:clamp(28px,4.5vw,76px);align-items:center}
+.pinksky-service-hero-media{min-height:430px;border-radius:26px;overflow:hidden;background:linear-gradient(140deg,#f9e9f0,#fff4f7);display:grid;place-items:center;box-shadow:0 16px 45px #4c25310c;isolation:isolate}
+.pinksky-service-hero-media>img{width:100%;height:100%;max-height:610px;min-height:430px;object-fit:cover;display:block}
+.pinksky-service-hero-media.pinksky-service-low-res>img{width:auto;height:auto;min-height:0;max-height:280px;max-width:min(100%,340px);object-fit:contain;border-radius:12px}
+.pinksky-service-hero-copy{min-width:0}
+.pinksky-service-hero-copy h1{font-family:Georgia,'Times New Roman',serif;font-size:clamp(37px,4.7vw,65px);line-height:1.1;letter-spacing:-.04em;color:#41243a;margin:13px 0 20px;overflow-wrap:break-word}
+.pinksky-service-hero-copy .eyebrow{font-size:12px;letter-spacing:.16em;color:#944361}
+.pinksky-service-intro{font-size:clamp(16px,1.7vw,19px);color:#714a61!important;font-weight:650;line-height:1.65;margin:0 0 14px}
+.pinksky-service-description{line-height:1.8;color:#66535d;font-size:15px;margin:0 0 20px}
+.pinksky-service-facts{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0 25px}
+.pinksky-service-facts>div{display:grid;gap:4px;min-width:155px;background:#fff2f6;border:1px solid #f0dbe4;padding:13px 18px;border-radius:12px}
+.pinksky-service-facts span{font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:#8c5e71}
+.pinksky-service-facts strong{font-size:17px;color:#5b2f47}
+.pinksky-service-hero-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:24px}
+.pinksky-service-hero-actions .primary{background:#914267;color:#fff!important;border-radius:10px;min-height:53px;box-shadow:0 9px 20px #91426725}
+.pinksky-service-hero-actions .primary:hover,.pinksky-service-final-booking .primary:hover{background:#702948}
+.pinksky-service-hero-actions .secondary{color:#854563;border:1px solid #e4c1d0;border-radius:10px;min-height:53px}
+.pinksky-service-booking-note{font-size:13px;line-height:1.6;color:#816975;margin:13px 0}
+.pinksky-service-hero-copy .pinksky-share-actions{margin:15px 0 0}
+.pinksky-service-block{width:min(1150px,calc(100% - 64px));margin:0 auto;padding:55px 0}
+.pinksky-service-block h2{font-family:Georgia,'Times New Roman',serif;font-size:clamp(29px,3.3vw,42px);letter-spacing:-.025em;color:#4c2c3f;line-height:1.2;margin:8px 0 21px}
+.pinksky-service-kicker{color:#944866;font-weight:850;letter-spacing:.16em;font-size:11px}
+.pinksky-treatment-section{border-top:1px solid #eddae3;scroll-margin-top:115px}
+.pinksky-treatment-menu{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0;margin:0}
+.pinksky-treatment-menu li{min-width:0;display:flex;align-items:flex-start;gap:12px;border:1px solid #ead3df;border-radius:13px;padding:15px 17px;background:#fff;font-size:14px;line-height:1.55;color:#53394b;font-weight:720}
+.pinksky-treatment-menu svg{color:#a95678;flex:0 0 auto;margin-top:2px}
+.pinksky-service-gallery-section{border-top:1px solid #eddae3}
+.pinksky-service-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.pinksky-service-gallery img{width:100%;height:300px;object-fit:cover;border-radius:14px;background:#f9eef2}
+.pinksky-service-questions{padding-top:30px;padding-bottom:35px}
+.pinksky-service-questions .pinksky-seo-faqs{max-width:100%;margin:0}
+.pinksky-service-detail .pinksky-related-guides{width:min(1150px,calc(100% - 64px));margin:15px auto 48px}
+.pinksky-service-detail .pinksky-related-guides ul{margin-top:14px}
+.pinksky-service-detail .pinksky-related-services{padding:48px max(32px,calc((100vw - 1150px)/2)) 55px;background:#fff4f7}
+.pinksky-service-detail .pinksky-related-grid{grid-template-columns:repeat(auto-fit,minmax(250px,1fr));max-width:1150px;margin:20px auto 0}
+.pinksky-service-detail .pinksky-related-card img{height:210px}
+.pinksky-service-final-booking{width:min(1150px,calc(100% - 64px));margin:45px auto 85px;border-radius:21px;background:linear-gradient(125deg,#4b253d,#7f3e60);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:clamp(26px,4vw,46px)}
+.pinksky-service-final-booking .pinksky-service-kicker{color:#f8c5dc}
+.pinksky-service-final-booking h2{font-family:Georgia,serif;font-size:clamp(28px,3.7vw,46px);line-height:1.15;margin:10px 0;letter-spacing:-.025em}
+.pinksky-service-final-booking p{max-width:600px;color:#f2dce7;font-size:14px;line-height:1.7;margin:0}
+.pinksky-service-final-booking .primary{flex:0 0 auto;background:#fff;color:#702d4f;min-height:52px;border-radius:10px;padding:0 22px}
+.pinksky-service-final-booking .primary:hover{color:#fff}
+.pinksky-service-detail :is(a,button,summary):focus-visible{outline:3px solid #b85b89;outline-offset:3px}
+@media(max-width:920px){
+  .pinksky-service-hero-grid{grid-template-columns:1fr;gap:27px}
+  .pinksky-service-hero-media{min-height:0;max-height:470px}
+  .pinksky-service-hero-media>img{min-height:0;height:auto;max-height:470px;aspect-ratio:4/3;object-fit:cover}
+  .pinksky-service-hero-media.pinksky-service-low-res{min-height:250px}
+  .pinksky-service-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .pinksky-service-detail .pinksky-service-page,.pinksky-service-block,.pinksky-service-final-booking,.pinksky-service-detail .pinksky-related-guides{width:calc(100% - 32px)}
+  .pinksky-service-detail .pinksky-service-page{padding:24px 0 32px}
+  .pinksky-service-detail .pinksky-breadcrumb{font-size:12px;margin-bottom:20px}
+  .pinksky-service-hero-media{border-radius:17px}
+  .pinksky-service-hero-media>img{max-height:350px;aspect-ratio:1/1}
+  .pinksky-service-hero-copy h1{font-size:clamp(34px,9vw,48px);margin-bottom:14px}
+  .pinksky-service-intro{font-size:16px}
+  .pinksky-service-hero-actions{flex-direction:column;align-items:stretch}
+  .pinksky-service-hero-actions :is(a,button){width:100%}
+  .pinksky-service-facts>div{flex:1}
+  .pinksky-service-block{padding:32px 0}
+  .pinksky-treatment-menu,.pinksky-service-gallery{grid-template-columns:1fr}
+  .pinksky-service-gallery img{height:auto;max-height:375px;aspect-ratio:4/3}
+  .pinksky-service-detail .pinksky-related-services{padding:36px 16px}
+  .pinksky-service-final-booking{flex-direction:column;align-items:stretch;margin:22px auto 55px}
+  .pinksky-service-final-booking .primary{width:100%}
+}

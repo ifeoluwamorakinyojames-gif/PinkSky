@@ -147,7 +147,7 @@ export default function OnlineAppointmentForm({
       <ArrowLeft size={18} aria-hidden='true'/> Change branch
     </button>
     <span className='pinksky-branch-step'>ONLINE APPOINTMENT · STEP 2 OF 2</span>
-    <h2 id='pinksky-online-title'>Request a {branch.id === 'airport-road' ? 'Airport Road' : 'ShopMall'} appointment</h2>
+    <h2 id='pinksky-online-title'>Book online — {branch.id === 'airport-road' ? 'Airport Road, Warri' : 'ShopMall, Effurun'}</h2>
     <p className='pinksky-online-explainer'>Fill in your details and preferred time. Your request goes straight to the Pinksky booking dashboard. Staff will confirm availability before the appointment is final.</p>
     <form className='pinksky-online-form' onSubmit={submit}>
       <label>Full name *
@@ -173,7 +173,7 @@ export default function OnlineAppointmentForm({
           name='preferredDate' type='date' min={today} required value={form.date}
           onChange={event => setForm({...form,date:event.target.value})}/></span>
       </label>
-      <label>Preferred time (Nigeria time) *
+      <label>Preferred time (WAT / Nigeria) *
         <span className='pinksky-input-icon'><Clock3 size={18}/><input
           name='preferredTime' type='time' step='1800' required value={form.time}
           onChange={event => setForm({...form,time:event.target.value})}/></span>

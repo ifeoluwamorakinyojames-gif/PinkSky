@@ -6,7 +6,9 @@ import {
 } from 'lucide-react'
 import {adminApi, AdminSession, AdminUser} from './admin/api'
 import BookingDesk from './admin/BookingDesk'
+import './admin/admin-core.css'
 import {ShareableLink} from './ShareableLink'
+import {originalImageDimensions, displayServiceEyebrow} from './servicePageHelpers'
 import {defaultBookingBranches,getBookingBranchId,validateWhatsappNumber} from './bookingBranches'
 
 type Section =
@@ -114,6 +116,8 @@ function Editor({
   const title=form.name||form.title||form.customerName||form.email||(isNew?'New record':'Record')
   const publicSlug=typeof form.slug==='string'?form.slug:form.slug?.current||''
   const publicPath=section==='services'?'/service/'+publicSlug:section==='blog'?'/article/'+publicSlug:''
+  const heroDimensions=originalImageDimensions(form.heroImage?.asset?._ref||'')
+  const heroTooSmall=!!heroDimensions&&(heroDimensions.width<600||heroDimensions.height<450)
 
   async function save() {
     if(readonly) return
@@ -124,6 +128,7 @@ function Editor({
       if((section==='services'||section==='products'||section==='blog'||section==='locations') && !payload.slug){
         payload.slug=slugify(payload.name||payload.title||'')
       }
+      if(section==='services'&&typeof payload.eyebrow==='string') payload.eyebrow=displayServiceEyebrow(payload.eyebrow)
       if(section==='services'||section==='blog') {
         const value=typeof payload.slug==='string'?payload.slug:payload.slug?.current||''
         if(!/^[a-z0-9][a-z0-9-]{0,159}$/.test(value)){
@@ -218,7 +223,17 @@ function Editor({
         </section>
         <div className='admin-form-grid'><Field label='Price text'><input value={form.price||''} onChange={e=>set('price',e.target.value)}/></Field><Field label='Duration'><input value={form.duration||''} onChange={e=>set('duration',e.target.value)}/></Field></div>
         <Field label='Service items' hint='One item per line'><textarea rows={6} value={arrText(form.items)} onChange={e=>set('items',lines(e.target.value))}/></Field>
-        <ImageUpload label='Main service image' current={form.heroImage} onUploaded={img=>set('heroImage',img)}/><MultiImageUpload label='Service gallery' current={form.gallery||[]} max={8} onUploaded={imgs=>set('gallery',imgs)}/>
+        <ImageUpload label='Main service image' current={form.heroImage} onUploaded={img=>set('heroImage',img)}/>
+        {heroTooSmall&&<div className='admin-error' role='status'>
+          This service photo is only {heroDimensions?.width} × {heroDimensions?.height} pixels.
+          Please replace it with a genuine high-resolution image (ideally at least 1200 pixels wide).
+          Until then, the public page avoids stretching it into a blurry full-size image.
+        </div>}
+        {!!form.heroImage?.asset&&<Field label='Service image description (alt text)' hint='Describe the real image accurately for accessibility.'>
+          <input maxLength={160} value={form.heroImage?.alt||''}
+            onChange={e=>set('heroImage',{...form.heroImage,alt:e.target.value})}
+            placeholder='Describe what appears in this service photo'/>
+        </Field>}<MultiImageUpload label='Service gallery' current={form.gallery||[]} max={8} onUploaded={imgs=>set('gallery',imgs)}/>
         <div className='admin-form-grid'><Field label='Display order'><input type='number' value={form.order??100} onChange={e=>set('order',Number(e.target.value))}/></Field><Toggle label='Published' checked={form.published!==false} onChange={v=>set('published',v)}/></div>
       </>}
 
