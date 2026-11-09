@@ -716,6 +716,9 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
     return <Suspense fallback={<main className='content' role='status'>Loading Pinksky Admin…</main>}><AdminDashboard onExit={() => go()} /></Suspense>
   }
 
+  const activeLocations = locations.filter(item => item.active !== false)
+  const bookingBranches = resolveBookingBranches(locations as BookingLocationRecord[])
+
   const header = (
     <>
       <div className='announcement ft-site-announcement'>
@@ -784,23 +787,26 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
 
       <p><a href='/reviews'>Customer Reviews ★★★★★</a> · <a href='/reviews#write-review'>Write a review</a></p>
 
-      {phones.length > 0 && (
-        <div>
-          {phones.map(phone => (
-            <a
-              key={phone}
-              href={'tel:' + phone.replace(/\s/g, '')}
-            >
-              {phone}
-            </a>
-          ))}
-        </div>
-      )}
+      <div className='pinksky-footer-branch-contact' aria-label='Pinksky branch contacts'>
+        {bookingBranches.map(branch=>(
+          <section key={branch.id}>
+            <strong>{branch.id==='airport-road'?'Airport Road — Warri':'ShopMall — Effurun'}</strong>
+            <div>{branch.whatsappNumbers.map(number=>(
+              <a key={number}
+                href={'https://wa.me/'+(number.replace(/\D/g,'').startsWith('0')?'234'+number.replace(/\D/g,'').slice(1):number.replace(/\D/g,''))}
+                target='_blank' rel='noopener noreferrer'
+                aria-label={'WhatsApp '+number+' at '+branch.name}>
+                <MessageCircle size={14} aria-hidden='true'/> {number}
+              </a>
+            ))}</div>
+          </section>
+        ))}
+        {!bookingBranches.length&&phones.map(phone=>(
+          <a key={phone} href={'tel:'+phone.replace(/\s/g,'')}>{phone}</a>
+        ))}
+      </div>
     </footer>
   )
-
-  const activeLocations = locations.filter(item => item.active !== false)
-  const bookingBranches = resolveBookingBranches(locations as BookingLocationRecord[])
 
   const bookingModal = bookingSelection && (
     <BranchBookingModal
