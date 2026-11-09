@@ -3,7 +3,7 @@ const ArticleBody = lazy(() => import('./ArticleBody'))
 const AdminDashboard = lazy(() => import('./AdminDashboard'))
 const ReviewsPage = lazy(() => import('./ReviewsPage'))
 const LuxeHomepage = lazy(() => import('./LuxeExactHomepage'))
-import './shareable-links.css'
+import './related-content.css'
 import {articlesForService,servicesForArticle,articlesForArticle} from './internalLinking'
 import {displayServicePrice, displayServiceDuration, displayServiceEyebrow, serviceHeroImage, isSmallSourceImage, originalImageDimensions, relatedServicesForService} from './servicePageHelpers'
 const BranchBookingModal = lazy(() => import('./BranchBookingModal'))
