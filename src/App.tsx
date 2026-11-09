@@ -35,6 +35,7 @@ type Service = {
   duration?: string
   items?: string[]
   image?: string
+  imageAlt?: string
   gallery?: string[]
 
   seoKeyword?: string
@@ -855,7 +856,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             </nav>
             <div className='pinksky-service-hero-grid'>
               <div className={'pinksky-service-hero-media'+(smallHero?' pinksky-service-low-res':'')}>
-                <Img src={heroImage} alt={service.name+' at Pinksky Beauty & Wellness'}
+                <Img src={heroImage} alt={service.imageAlt?.trim() || service.name+' at Pinksky Beauty & Wellness'}
                   priority sizes='(max-width: 820px) calc(100vw - 32px), 46vw'/>
               </div>
               <div className='pinksky-service-hero-copy'>
