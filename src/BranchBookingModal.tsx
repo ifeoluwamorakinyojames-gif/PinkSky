@@ -109,7 +109,7 @@ export default function BranchBookingModal({
                 {branch.whatsappNumbers.map(number=><a key={number}
                   href={whatsappUrl(number,message)} target='_blank' rel='noopener noreferrer'
                   onClick={onClose}>
-                  <MessageCircle size={16}/> {number}
+                  <MessageCircle size={16}/> WhatsApp {branch.whatsappNumbers.indexOf(number)+1}: {number}
                 </a>)}
               </div>
               <a className='pinksky-branch-map' href={map} target='_blank' rel='noopener noreferrer'>
