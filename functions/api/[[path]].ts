@@ -218,7 +218,7 @@ if (path === '/api/content' && method === 'GET') {
   const client = sanity(env, false)
 
   const results = await Promise.allSettled([
-    client.fetch(`*[_type == "service" && published == true] | order(order asc, name asc) {
+    client.fetch(`*[_type == "service" && published == true && defined(slug.current)] | order(order asc, name asc) {
   _id,
   name,
   "slug": slug.current,
@@ -246,7 +246,7 @@ if (path === '/api/content' && method === 'GET') {
         "src": image.asset->url, "image": image.asset->url
       }`),
 
-    client.fetch(`*[_type == "article" && published == true]
+    client.fetch(`*[_type == "article" && published == true && defined(slug.current)]
       | order(coalesce(publishedAt, _createdAt) desc) {
         _id, title, "slug": slug.current, intent, summary, body,
         seoTitle, metaDescription, seoKeyword, seoFaqText, authorName, publishedAt,
