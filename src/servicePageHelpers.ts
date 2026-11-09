@@ -15,7 +15,7 @@ export function displayServiceEyebrow(value?: string): string {
 }
 export function originalImageDimensions(source?: string): {width:number;height:number}|null {
   if(!source)return null
-  const match=source.match(/-(\d{2,5})x(\d{2,5})\.(?:png|jpe?g|webp)(?:\?|$)/i)
+  const match=source.match(/-(\d{2,5})x(\d{2,5})(?:\.(?:png|jpe?g|webp)(?:\?|$)|-(?:png|jpe?g|webp)(?:$|[-]))/i)
   if(!match)return null
   return {width:Number(match[1]),height:Number(match[2])}
 }
