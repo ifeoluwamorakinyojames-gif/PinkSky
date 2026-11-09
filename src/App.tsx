@@ -9,6 +9,7 @@ import {displayServicePrice, displayServiceDuration, displayServiceEyebrow, serv
 import BranchBookingModal from './BranchBookingModal'
 import {resolveBookingBranches, type BookingLocationRecord} from './bookingBranches'
 import './luxe-nav.css'
+import './service-detail.css'
 import {
   ArrowLeft,
   ArrowRight,
@@ -828,150 +829,112 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
     )
   }
    if (service) {
+    const price = displayServicePrice(service.price)
+    const duration = displayServiceDuration(service.duration)
+    const heroImage = serviceHeroImage(service.image, service.gallery)
+    const smallHero = isSmallSourceImage(heroImage)
+    const options = Array.from(new Set((service.items || []).map(item=>item.trim()).filter(Boolean)))
+    const relevantGuides = articlesForService(service, articles)
+    const relatedServices = relatedServicesForService(service, services)
+    const eyebrow = displayServiceEyebrow(service.eyebrow)
     return (
       <div>
         {header}
-
-        <main>
-          <section className='detail-hero pinksky-service-page'>
-            <div className='pinksky-breadcrumb'>
-              <a href='/'>Home</a><span>/</span>
-              <a href='/services'>Services</a><span>/</span>
-              <span>{service.name}</span>
-            </div>
-            <a
-              className='back'
-              href='/services'
-            >
-              <ArrowLeft size={17} /> All services
-            </a>
-
-            <div className='detail-grid pinksky-product-layout'>
-              <Img
-                src={
-                  service.image ||
-                  '/resources/pinksky-logo.jpg'
-                }
-                alt={service.name}
-                priority
-              />
-
-              <div>
-                {service.eyebrow && (
-                  <span className='eyebrow'>
-                    {service.eyebrow}
-                  </span>
-                )}
-
+        <main className='pinksky-service-detail'>
+          <section className='pinksky-service-page' aria-label={service.name}>
+            <nav className='pinksky-breadcrumb' aria-label='Breadcrumb'>
+              <a href='/'>Home</a><span aria-hidden='true'>/</span>
+              <a href='/services'>Services</a><span aria-hidden='true'>/</span>
+              <span aria-current='page'>{service.name}</span>
+            </nav>
+            <div className='pinksky-service-hero-grid'>
+              <div className={'pinksky-service-hero-media'+(smallHero?' pinksky-service-low-res':'')}>
+                <Img src={heroImage} alt={service.name+' at Pinksky Beauty & Wellness'}
+                  priority sizes='(max-width: 820px) calc(100vw - 32px), 46vw'/>
+              </div>
+              <div className='pinksky-service-hero-copy'>
+                {eyebrow&&<span className='eyebrow'>{eyebrow}</span>}
                 <h1>{service.seoHeading || service.name}</h1>
-                {service.short && <p className='pinksky-service-intro'>{service.short}</p>}
-
-                {service.description && (
-                  <p>{service.description}</p>
-                )}
-
-                {(service.price || service.duration) && (
-                  <div className='facts'>
-                    {service.price && (
-                      <span>
-                        <small>Price</small>
-                        <strong>{service.price}</strong>
-                      </span>
-                    )}
-
-                    {service.duration && (
-                      <span>
-                        <small>Duration</small>
-                        <strong>{service.duration}</strong>
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {service.items?.length ? (
-                  <div className='chips'>
-                    {service.items.map(item => (
-                      <span key={item}>{item}</span>
-                    ))}
-                  </div>
-                ) : null}
-
-                <div className='service-booking'>
-                  <strong>
-                    Choose the Pinksky branch closest to you:
-                  </strong>
-
-                  <ServiceWhatsAppLinks
-                    serviceName={service.name}
-                    onBook={openBooking}
-                  />
+                {service.short&&<p className='pinksky-service-intro'>{service.short}</p>}
+                {service.description&&<p className='pinksky-service-description'>{service.description}</p>}
+                {(price||duration)&&<div className='pinksky-service-facts'>
+                  {price&&<div><span>Price</span><strong>{price}</strong></div>}
+                  {duration&&<div><span>Duration</span><strong>{duration}</strong></div>}
+                </div>}
+                <div className='pinksky-service-hero-actions'>
+                  <button type='button' className='primary' onClick={()=>openBooking(service.name)}>
+                    Book Appointment <ArrowRight size={18} aria-hidden='true'/>
+                  </button>
+                  {options.length>0&&<a className='secondary' href='#service-options'>Explore options <ArrowRight size={16} aria-hidden='true'/></a>}
                 </div>
+                <p className='pinksky-service-booking-note'>Choose Airport Road or ShopMall. Request a time online or contact the selected branch on WhatsApp.</p>
+                <ShareableLink href={'/service/'+service.slug} title={service.name} hideViewLink/>
               </div>
             </div>
-
-            <div className='pinksky-site-crosslinks'>
-              <ShareableLink href={'/service/'+service.slug} title={service.name}/>
-              <a href='/services'>All services <ArrowRight size={15}/></a>
-              <a href='/blog'>Beauty guides <ArrowRight size={15}/></a>
-            </div>
-            {service.gallery?.length ? (
-              <div className='gallery'>
-                {service.gallery
-                  .filter(Boolean)
-                  .map((image, index) => (
-                    <Img
-                      key={image + index}
-                      src={image}
-                      alt={`${service.name} ${index + 1}`}
-                    />
-                  ))}
-              </div>
-            ) : null}
-            <section className='pinksky-service-info'>
-              <h2>About {service.name}</h2>
-              <p>{service.description || service.short || `Contact Pinksky to learn about ${service.name}, availability and service details.`}</p>
-              {service.items?.length ? <><h3>Service options and highlights</h3>
-                <ul>{service.items.map(item => <li key={item}>{item}</li>)}</ul></> : null}
-              <SeoFaqSection value={service.seoFaqText}/>
-              <p>Explore more information on Pinksky's beauty journal or book this service at your preferred branch.</p>
-              <h3>Book at your preferred Pinksky branch</h3>
-              <p>Contact our team to confirm pricing, availability and appointment details.</p>
-              <ServiceWhatsAppLinks serviceName={service.name} onBook={openBooking}/>
-            </section>
           </section>
-          {articlesForService(service, articles).length > 0 && (
-            <section className='pinksky-related-guides' aria-label={'Guides about '+service.name}>
-              <h2>Guides related to {service.name}</h2>
-              <p>Helpful articles from our beauty journal, including advice before your next appointment.</p>
-              <ul>
-                {articlesForService(service, articles).map(item=>(
-                  <li key={item.slug}><a href={'/article/'+item.slug}>{item.title}<ArrowRight size={16} aria-hidden='true'/></a></li>
-                ))}
-              </ul>
-            </section>
-          )}
-          {services.some(item => item.slug !== service.slug) && (
-            <section className='pinksky-related-services'>
-              <div className='pinksky-related-heading'>
-                <h2>Explore more Pinksky services</h2>
-                <a className='secondary' href='/services'>All services <ArrowRight size={16}/></a>
-              </div>
-              <div className='pinksky-related-grid'>
-                {services.filter(item => item.slug !== service.slug).slice(0,3).map(item => (
-                  <article className='pinksky-related-card' key={item.slug}>
-                    <a href={'/service/' + item.slug}>
-                      <Img src={item.image || '/resources/pinksky-logo.jpg'} alt={item.name}/>
-                      <span>{item.name}</span>
-                      {item.short && <small>{item.short}</small>}
-                      <strong>View service <ArrowRight size={16}/></strong>
-                    </a>
-                  </article>
-                ))}
-              </div>
-            </section>
-          )}
-        </main>
 
+          {options.length>0&&<section className='pinksky-service-block pinksky-treatment-section' id='service-options' aria-labelledby='pinksky-service-options-title'>
+            <span className='pinksky-service-kicker'>THE SERVICE MENU</span>
+            <h2 id='pinksky-service-options-title'>Treatments & care options</h2>
+            <ul className='pinksky-treatment-menu'>
+              {options.map(item=><li key={item}>
+                <Check size={17} aria-hidden='true'/><span>{item}</span>
+              </li>)}
+            </ul>
+          </section>}
+
+          {!!service.gallery?.length&&<section className='pinksky-service-block pinksky-service-gallery-section' aria-label={service.name+' gallery'}>
+            <span className='pinksky-service-kicker'>EXPLORE THE STUDIO</span>
+            <h2>{service.name} gallery</h2>
+            <div className='pinksky-service-gallery'>
+              {service.gallery.filter(Boolean).map((image,index)=><Img
+                key={image+index}
+                src={image}
+                alt={service.name+' gallery image '+(index+1)}
+                sizes='(max-width: 700px) calc(100vw - 32px), (max-width: 1020px) 45vw, 30vw'
+              />)}
+            </div>
+          </section>}
+
+          {service.seoFaqText&&<div className='pinksky-service-block pinksky-service-questions'>
+            <SeoFaqSection value={service.seoFaqText}/>
+          </div>}
+
+          {relevantGuides.length>0&&<section className='pinksky-related-guides' aria-label={'Guides about '+service.name}>
+            <h2>Helpful guides about {service.name}</h2>
+            <ul>{relevantGuides.map(item=><li key={item.slug}>
+              <a href={'/article/'+item.slug}>{item.title}<ArrowRight size={16} aria-hidden='true'/></a>
+            </li>)}</ul>
+          </section>}
+
+          {relatedServices.length>0&&<section className='pinksky-related-services' aria-labelledby='pinksky-related-services-title'>
+            <div className='pinksky-related-heading'>
+              <h2 id='pinksky-related-services-title'>Related Pinksky treatments</h2>
+              <a className='secondary' href='/services'>All services <ArrowRight size={16} aria-hidden='true'/></a>
+            </div>
+            <div className='pinksky-related-grid'>
+              {relatedServices.map(item=><article className='pinksky-related-card' key={item.slug}>
+                <a href={'/service/'+item.slug}>
+                  <Img src={item.image||'/resources/pinksky-logo.jpg'} alt={item.name}/>
+                  <span>{item.name}</span>
+                  {item.short&&<small>{item.short}</small>}
+                  <strong>View service <ArrowRight size={16} aria-hidden='true'/></strong>
+                </a>
+              </article>)}
+            </div>
+          </section>}
+
+          <section className='pinksky-service-final-booking' aria-labelledby='pinksky-service-last-cta'>
+            <div>
+              <span className='pinksky-service-kicker'>YOUR NEXT VISIT</span>
+              <h2 id='pinksky-service-last-cta'>Ready to book {service.name}?</h2>
+              <p>Choose a convenient Pinksky branch and request your preferred appointment date and time.</p>
+            </div>
+            <button type='button' className='primary' onClick={()=>openBooking(service.name)}>
+              Choose a branch <ArrowRight size={18} aria-hidden='true'/>
+            </button>
+          </section>
+        </main>
         {footer}
         {bookingModal}
       </div>
