@@ -621,6 +621,18 @@ const asset = await sanity(env, true).assets.upload(
 
     if (method === 'POST' && !id) {
       const payload = cleanPayload(await parseJson(request))
+      if (resource === 'services' || resource === 'articles') {
+        const slug=typeof payload.slug?.current==='string'?payload.slug.current.trim():''
+        if (!/^[a-z0-9][a-z0-9-]{0,159}$/.test(slug)) {
+          return json({error:'A unique URL slug is required (lowercase letters, numbers, hyphens).'},400)
+        }
+        const existing=await client.fetch<string|null>(
+          '*[_type == $type && slug.current == $slug && _id != $id][0]._id',
+          {type,slug,id:id||''})
+        if (existing) {
+          return json({error:'This URL is already used by another '+(resource==='services'?'service':'blog post')+'. Choose a different slug.'},409)
+        }
+      }
       if (resource === 'settings') {
         const created = await client.createOrReplace({_id:'siteSettings',_type:'siteSettings',...payload})
         return json(created,201)
@@ -632,6 +644,18 @@ const asset = await sanity(env, true).assets.upload(
 
     if (method === 'PUT') {
       const payload = cleanPayload(await parseJson(request))
+      if (resource === 'services' || resource === 'articles') {
+        const slug=typeof payload.slug?.current==='string'?payload.slug.current.trim():''
+        if (!/^[a-z0-9][a-z0-9-]{0,159}$/.test(slug)) {
+          return json({error:'A unique URL slug is required (lowercase letters, numbers, hyphens).'},400)
+        }
+        const existing=await client.fetch<string|null>(
+          '*[_type == $type && slug.current == $slug && _id != $id][0]._id',
+          {type,slug,id:id||''})
+        if (existing) {
+          return json({error:'This URL is already used by another '+(resource==='services'?'service':'blog post')+'. Choose a different slug.'},409)
+        }
+      }
       if (resource === 'settings') return json(await client.createOrReplace({_id:'siteSettings',_type:'siteSettings',...payload}))
       return json(await client.patch(id).set(payload).commit())
     }
