@@ -1,10 +1,11 @@
-import {useEffect, useMemo, useState} from 'react'
+import {lazy, Suspense, useEffect, useMemo, useState} from 'react'
 import {PortableText} from '@portabletext/react'
-import AdminDashboard from './AdminDashboard'
-import ReviewsPage from './ReviewsPage'
-import LuxeHomepage from './LuxeExactHomepage'
+const AdminDashboard = lazy(() => import('./AdminDashboard'))
+const ReviewsPage = lazy(() => import('./ReviewsPage'))
+const LuxeHomepage = lazy(() => import('./LuxeExactHomepage'))
 import {ShareableLink} from './ShareableLink'
 import {articlesForService,servicesForArticle,articlesForArticle} from './internalLinking'
+import {displayServicePrice, displayServiceDuration, displayServiceEyebrow, serviceHeroImage, isSmallSourceImage, originalImageDimensions, relatedServicesForService} from './servicePageHelpers'
 import BranchBookingModal from './BranchBookingModal'
 import {resolveBookingBranches, type BookingLocationRecord} from './bookingBranches'
 import './luxe-nav.css'
@@ -196,21 +197,31 @@ function go(value = '') {
 }
 
 function Img({
-  src,
-  alt,
-  priority = false,
+  src, alt, priority = false, sizes,
 }: {
   src: string
   alt: string
   priority?: boolean
+  sizes?: string
 }) {
+  const original = originalImageDimensions(src)
+  const isSanity = src.startsWith('https://cdn.sanity.io/images/')
+  const originalUrl = src.split('?')[0]
+  const widths = [320,480,640,800,960].filter(w=>!original||w<=original.width)
+  const srcSet = isSanity && widths.length
+    ? widths.map(w=>originalUrl+'?w='+w+'&fm=webp&q=75 '+w+'w').join(', ')
+    : undefined
   return (
     <img
       src={src}
+      srcSet={srcSet}
+      sizes={srcSet ? (sizes || '(max-width: 700px) 100vw, 33vw') : undefined}
       alt={alt}
+      width={original?.width}
+      height={original?.height}
       loading={priority ? 'eager' : 'lazy'}
       decoding='async'
-      fetchPriority={priority ? 'high' : 'auto'}
+      fetchPriority={priority ? 'high' : 'low'}
     />
   )
 }
@@ -290,7 +301,7 @@ function ServiceWhatsAppLinks({
         onClick={event => {event.stopPropagation(); onBook(serviceName)}}
       >
         <MessageCircle size={17} aria-hidden='true'/>
-        Book {serviceName} · choose your branch
+        Book this service
       </button>
     </div>
   )
@@ -701,7 +712,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   }
 
   if (route.type === 'admin') {
-    return <AdminDashboard onExit={() => go()} />
+    return <Suspense fallback={<main className='content' role='status'>Loading Pinksky Admin…</main>}><AdminDashboard onExit={() => go()} /></Suspense>
   }
 
   const header = (
@@ -725,7 +736,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           <a href='/locations'>Locations</a>
           <a href='/programs'>Packages</a>
         </nav>
-        <button className='ft-nav-book' type='button' onClick={() => openBooking()}>
+        <button className='ft-nav-book' type='button' onClick={() => openBooking(service?.name)}>
           <Sparkles size={17} aria-hidden='true'/> Book Now
         </button>
         <button
@@ -748,7 +759,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
             <a key={label} href={path ? '/' + path : '/'} onClick={() => setMenu(false)}>{label}</a>
           ))}
           <button type='button' onClick={() => {setMenu(false);openBooking()}}>
-            <MessageCircle size={18}/> Book on WhatsApp
+            <MessageCircle size={18}/> Book appointment
           </button>
         </nav>
       )}
@@ -1326,12 +1337,12 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
     return (
       <div>
         {header}
-        <ReviewsPage
+        <Suspense fallback={<main className='content' role='status'>Loading reviews…</main>}><ReviewsPage
           reviews={reviews}
           services={services.map(item => item.name)}
           loading={contentLoading}
           onBook={() => openBooking()}
-        />
+        /></Suspense>
         {footer}
         {bookingModal}
       </div>
@@ -1400,7 +1411,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   return (
     <div>
       {header}
-      <LuxeHomepage
+      <Suspense fallback={<main className='content' role='status'>Loading Pinksky…</main>}><LuxeHomepage
         promotion={banners.length > 0 ? <BannerCarousel banners={banners} /> : null}
         services={services}
         reviews={reviews}
@@ -1411,7 +1422,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
         loading={contentLoading}
         instagram={settings.instagram}
         onBook={openBooking}
-      />
+      /></Suspense>
       {footer}
       {bookingModal}
     </div>
