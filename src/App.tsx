@@ -3,6 +3,8 @@ import {PortableText} from '@portabletext/react'
 import AdminDashboard from './AdminDashboard'
 import ReviewsPage from './ReviewsPage'
 import LuxeHomepage from './LuxeExactHomepage'
+import {ShareableLink} from './ShareableLink'
+import {articlesForService,servicesForArticle,articlesForArticle} from './internalLinking'
 import BranchBookingModal from './BranchBookingModal'
 import {resolveBookingBranches, type BookingLocationRecord} from './bookingBranches'
 import './luxe-nav.css'
@@ -896,6 +898,11 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
               </div>
             </div>
 
+            <div className='pinksky-site-crosslinks'>
+              <ShareableLink href={'/service/'+service.slug} title={service.name}/>
+              <a href='/services'>All services <ArrowRight size={15}/></a>
+              <a href='/blog'>Beauty guides <ArrowRight size={15}/></a>
+            </div>
             {service.gallery?.length ? (
               <div className='gallery'>
                 {service.gallery
@@ -915,11 +922,23 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
               {service.items?.length ? <><h3>Service options and highlights</h3>
                 <ul>{service.items.map(item => <li key={item}>{item}</li>)}</ul></> : null}
               <SeoFaqSection value={service.seoFaqText}/>
+              <p>Explore more information on Pinksky's beauty journal or book this service at your preferred branch.</p>
               <h3>Book at your preferred Pinksky branch</h3>
               <p>Contact our team to confirm pricing, availability and appointment details.</p>
               <ServiceWhatsAppLinks serviceName={service.name} onBook={openBooking}/>
             </section>
           </section>
+          {articlesForService(service, articles).length > 0 && (
+            <section className='pinksky-related-guides' aria-label={'Guides about '+service.name}>
+              <h2>Guides related to {service.name}</h2>
+              <p>Helpful articles from our beauty journal, including advice before your next appointment.</p>
+              <ul>
+                {articlesForService(service, articles).map(item=>(
+                  <li key={item.slug}><a href={'/article/'+item.slug}>{item.title}<ArrowRight size={16} aria-hidden='true'/></a></li>
+                ))}
+              </ul>
+            </section>
+          )}
           {services.some(item => item.slug !== service.slug) && (
             <section className='pinksky-related-services'>
               <div className='pinksky-related-heading'>
@@ -1036,6 +1055,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           )}
 
           <h1>{article.title}</h1>
+          <ShareableLink href={'/article/'+article.slug} title={article.title}/>
           {article.authorName && <p className='pinksky-byline'>By {article.authorName}</p>}
 
           {article.summary && (
@@ -1058,6 +1078,24 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           </div>
 
           <SeoFaqSection value={article.seoFaqText}/>
+          {servicesForArticle(article,services).length>0&&
+            <section className='pinksky-related-guides' aria-label='Related Pinksky services'>
+              <h2>Explore the Pinksky treatments mentioned in this guide</h2>
+              <p>Browse the service details and select Airport Road or ShopMall to request an appointment.</p>
+              <ul>
+                {servicesForArticle(article,services).map(item=>
+                  <li key={item.slug}><a href={'/service/'+item.slug}>{item.name} in Warri & Effurun <ArrowRight size={16} aria-hidden='true'/></a></li>)}
+              </ul>
+            </section>}
+          {articlesForArticle(article,articles).length>0&&
+            <section className='pinksky-related-guides' aria-label='More relevant articles'>
+              <h2>Read more about this topic</h2>
+              <ul>
+                {articlesForArticle(article,articles).map(item=>
+                  <li key={item.slug}><a href={'/article/'+item.slug}>{item.title}<ArrowRight size={16} aria-hidden='true'/></a></li>)}
+              </ul>
+            </section>}
+          <div className='pinksky-site-crosslinks'><a href='/blog'>All beauty guides <ArrowRight size={16}/></a><a href='/services'>Explore all services <ArrowRight size={16}/></a></div>
           <button
             className='primary'
             onClick={() => openBooking()}
@@ -1083,6 +1121,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           </span>
 
           <h1>Find the service for you.</h1>
+          <p>Each published Pinksky service has its own shareable page. Explore treatments in Warri and Effurun and choose your preferred branch to book.</p>
 
           {services.length ? (
             <div className='grid'>
@@ -1091,16 +1130,12 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   className='card'
                   key={item._id || item.slug}
                                  >
-                  <Img
-                    src={
-                      item.image ||
-                      '/resources/pinksky-logo.jpg'
-                    }
-                    alt={item.name}
-                  />
+                  <a href={'/service/' + item.slug} aria-label={'View '+item.name+' service page'}>
+                    <Img src={item.image || '/resources/pinksky-logo.jpg'} alt={item.name}/>
+                  </a>
 
                   <div>
-                    <h3>{item.name}</h3>
+                    <h3><a href={'/service/' + item.slug}>{item.name}</a></h3>
 
                     {item.short && (
                       <p>{item.short}</p>
@@ -1110,6 +1145,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   View service <ArrowRight size={15} />
 </a>
 
+<ShareableLink href={'/service/'+item.slug} title={item.name} compact/>
 <ServiceWhatsAppLinks serviceName={item.name} onBook={openBooking} />
                   </div>
                 </article>
@@ -1191,6 +1227,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           </span>
 
           <h1>Helpful Pinksky guides.</h1>
+          <p>Explore individual beauty and wellness articles and share the guide most useful to you.</p>
 
           {articles.length ? (
             <div className='article-grid'>
@@ -1200,20 +1237,16 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                     <span>{item.intent}</span>
                   )}
 
-                  <h3>{item.title}</h3>
+                  <h3><a href={'/article/'+item.slug}>{item.title}</a></h3>
 
                   {item.summary && (
                     <p>{item.summary}</p>
                   )}
 
-                  <button
-                    onClick={() =>
-                      go('article/' + item.slug)
-                    }
-                  >
-                    Read guide{' '}
-                    <ArrowRight size={15} />
-                  </button>
+                  <a className='pinksky-blog-guide-link' href={'/article/'+item.slug}>
+                    Read the full guide <ArrowRight size={15} />
+                  </a>
+                  <ShareableLink href={'/article/'+item.slug} title={item.title} compact/>
                 </article>
               ))}
             </div>
