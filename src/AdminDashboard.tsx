@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import {adminApi, AdminSession, AdminUser} from './admin/api'
 import BookingDesk from './admin/BookingDesk'
+import './admin/admin-core.css'
 import {ShareableLink} from './ShareableLink'
 import {defaultBookingBranches,getBookingBranchId,validateWhatsappNumber} from './bookingBranches'
 
