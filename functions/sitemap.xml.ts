@@ -9,7 +9,7 @@ type Context = {env: Env; request: Request}
 type Page = {slug?: string; updatedAt?: string}
 
 const origin = 'https://pinkskybeauty.com'
-const fixedPaths = ['/', '/services', '/shop', '/blog', '/locations', '/programs']
+const fixedPaths = ['/', '/services', '/shop', '/blog', '/locations', '/programs', '/reviews']
 
 function xmlEscape(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
