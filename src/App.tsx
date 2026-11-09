@@ -3,7 +3,7 @@ const ArticleBody = lazy(() => import('./ArticleBody'))
 const AdminDashboard = lazy(() => import('./AdminDashboard'))
 const ReviewsPage = lazy(() => import('./ReviewsPage'))
 const LuxeHomepage = lazy(() => import('./LuxeExactHomepage'))
-import {ShareableLink} from './ShareableLink'
+import './shareable-links.css'
 import {articlesForService,servicesForArticle,articlesForArticle} from './internalLinking'
 import {displayServicePrice, displayServiceDuration, displayServiceEyebrow, serviceHeroImage, isSmallSourceImage, originalImageDimensions, relatedServicesForService} from './servicePageHelpers'
 const BranchBookingModal = lazy(() => import('./BranchBookingModal'))
@@ -877,7 +877,6 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   {options.length>0&&<a className='secondary' href='#service-options'>Explore options <ArrowRight size={16} aria-hidden='true'/></a>}
                 </div>
                 <p className='pinksky-service-booking-note'>Choose Airport Road or ShopMall. Request a time online or contact the selected branch on WhatsApp.</p>
-                <ShareableLink href={'/service/'+service.slug} title={service.name} hideViewLink/>
               </div>
             </div>
           </section>
@@ -1038,7 +1037,6 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           )}
 
           <h1>{article.title}</h1>
-          <ShareableLink href={'/article/'+article.slug} title={article.title}/>
           {article.authorName && <p className='pinksky-byline'>By {article.authorName}</p>}
 
           {article.summary && (
@@ -1128,7 +1126,6 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
   View service <ArrowRight size={15} />
 </a>
 
-<ShareableLink href={'/service/'+item.slug} title={item.name} compact/>
 <ServiceWhatsAppLinks serviceName={item.name} onBook={openBooking} />
                   </div>
                 </article>
@@ -1229,7 +1226,6 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
                   <a className='pinksky-blog-guide-link' href={'/article/'+item.slug}>
                     Read the full guide <ArrowRight size={15} />
                   </a>
-                  <ShareableLink href={'/article/'+item.slug} title={item.title} compact/>
                 </article>
               ))}
             </div>
