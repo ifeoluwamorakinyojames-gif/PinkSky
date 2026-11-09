@@ -90,3 +90,6 @@ footer{padding:42px 6vw;background:#26141e;color:#fff;display:grid;gap:12px}foot
 .pinksky-footer-branch-contact a{display:inline-flex;align-items:center;gap:6px;color:#f9dce9;text-decoration:none;font-size:13px;font-weight:700;margin:0}
 .pinksky-footer-branch-contact a:hover{text-decoration:underline}
 @media(max-width:620px){.pinksky-footer-branch-contact{grid-template-columns:1fr;gap:23px}}
+
+/* Immediate feedback while the on-demand booking UI loads. */
+.pinksky-booking-loading{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:#210f1db3;color:#fff;font-size:17px;font-weight:800;padding:20px;text-align:center}
