@@ -33,7 +33,7 @@ export const location = defineType({
       }),
     }),
     defineField({name: 'openingHours', title: 'Opening Hours', type: 'array', of: [{type: 'string'}]}),
-    defineField({name: 'image', title: 'Branch Image', type: 'image', options: {hotspot: true}}),
+    defineField({name: 'image', title: 'Branch Image', type: 'image', options: {hotspot: true}, fields: [{name: 'alt', title: 'Image Alt Text', type: 'string', description: 'Describe the branch photo and its location.'}]}),
     defineField({name: 'active', title: 'Active', type: 'boolean', initialValue: true}),
     defineField({name: 'order', title: 'Display Order', type: 'number', initialValue: 0}),
   ],
