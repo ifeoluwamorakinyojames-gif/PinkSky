@@ -236,7 +236,8 @@ if (path === '/api/content' && method === 'GET') {
   metaDescription,
   "image": heroImage.asset->url + "?w=960&fm=webp&q=75",
   "imageAlt": heroImage.alt,
-  "gallery": gallery[].asset->url + "?w=800&fm=webp&q=75"
+  "gallery": gallery[].asset->url + "?w=800&fm=webp&q=75",
+  "galleryAlts": gallery[].alt
 }`),
 
     client.fetch(`*[_type == "banner" && active == true &&
@@ -251,7 +252,8 @@ if (path === '/api/content' && method === 'GET') {
       | order(coalesce(publishedAt, _createdAt) desc) {
         _id, title, "slug": slug.current, intent, summary, body,
         seoTitle, metaDescription, seoKeyword, seoFaqText, authorName, publishedAt,
-        "image": featuredImage.asset->url
+        "image": featuredImage.asset->url,
+        "imageAlt": featuredImage.alt
       }`),
 
     client.fetch(`*[_type == "product" && published == true]
@@ -260,14 +262,15 @@ if (path === '/api/content' && method === 'GET') {
         regularPrice, salePrice, sku, gtin, stockQuantity, size,
         variants, shortDescription, description, benefits,
         ingredients, howToUse, seoTitle, metaDescription, featured,
-        "images": images[].asset->url
+        "images": images[].asset->url,
+        "imageAlts": images[].alt
       }`),
 
     client.fetch(`*[_type == "location"]
       | order(order asc, name asc) {
         _id, name, "slug": slug.current, address, note, phone,
         bookingBranchId, whatsappNumbers, active,
-        openingHours, "image": image.asset->url
+        openingHours, "image": image.asset->url, "imageAlt": image.alt
       }`),
 
     client.fetch(`*[_type == "siteSettings" && _id == "siteSettings"][0] {
