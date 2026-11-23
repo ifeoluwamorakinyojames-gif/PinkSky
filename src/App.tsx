@@ -37,6 +37,7 @@ type Service = {
   image?: string
   imageAlt?: string
   gallery?: string[]
+  galleryAlts?: (string | null)[]
 
   seoKeyword?: string
   seoIntent?: string
@@ -68,6 +69,7 @@ type Article = {
   summary?: string
   body?: any[]
   image?: string
+  imageAlt?: string
   seoTitle?: string
   metaDescription?: string
   seoKeyword?: string
@@ -93,6 +95,7 @@ type Product = {
   ingredients?: string
   howToUse?: string
   images?: string[]
+  imageAlts?: (string | null)[]
 }
 
 // Use a price only when Sanity has a valid positive numeric value.
@@ -121,6 +124,7 @@ type Location = {
   phone?: string
   openingHours?: string[]
   image?: string
+  imageAlt?: string
   bookingBranchId?: string
   whatsappNumbers?: string[]
   active?: boolean
@@ -898,7 +902,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
               {service.gallery.filter(Boolean).map((image,index)=><Img
                 key={image+index}
                 src={image}
-                alt={service.name+' gallery image '+(index+1)}
+                alt={service.galleryAlts?.[index]?.trim() || `${service.name} at Pinksky Beauty & Wellness — gallery photo ${index + 1}`}
                 sizes='(max-width: 700px) calc(100vw - 32px), (max-width: 1020px) 45vw, 30vw'
               />)}
             </div>
@@ -961,9 +965,9 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           </a>
           <div className='pinksky-product-layout'>
             <div className='pinksky-product-gallery'>
-              <Img src={photos[0] || '/resources/pinksky-logo.jpg'} alt={product.name} priority />
+              <Img src={photos[0] || '/resources/pinksky-logo.jpg'} alt={product.imageAlts?.[0]?.trim() || product.name} priority />
               {photos.length > 1 && <div className='pinksky-product-thumbnails'>
-                {photos.slice(1, 5).map((photo, i) => <Img key={photo + i} src={photo} alt={`${product.name} — image ${i + 2}`} />)}
+                {photos.slice(1, 5).map((photo, i) => <Img key={photo + i} src={photo} alt={product.imageAlts?.[i + 1]?.trim() || `${product.name} — product view ${i + 2}`} />)}
               </div>}
             </div>
             <div className='pinksky-product-summary'>
@@ -1025,7 +1029,7 @@ const whatsapp = 'https://wa.me/' + whatsappNumber
           {article.image && (
             <Img
               src={article.image}
-              alt={article.title}
+              alt={article.imageAlt?.trim() || article.title}
               priority
             />
           )}
