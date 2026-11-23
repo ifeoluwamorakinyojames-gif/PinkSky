@@ -28,10 +28,10 @@ export const article = defineType({
       type: 'array',
       of: [
         defineArrayMember({type: 'block'}),
-        defineArrayMember({type: 'image', options: {hotspot: true}}),
+        defineArrayMember({type: 'image', options: {hotspot: true}, fields: [{name: 'alt', title: 'Image Alt Text', type: 'string'}]}),
       ],
     }),
-    defineField({name: 'featuredImage', title: 'Featured Image', type: 'image', options: {hotspot: true}}),
+    defineField({name: 'featuredImage', title: 'Featured Image', type: 'image', options: {hotspot: true}, fields: [{name: 'alt', title: 'Image Alt Text', type: 'string', description: 'Describe the image as it appears in the article.'}]}),
     defineField({name: 'seoTitle', title: 'SEO Title', type: 'string'}),
     defineField({name: 'metaDescription', title: 'Meta Description', type: 'text', rows: 3}),
     defineField({name: 'publishedAt', title: 'Published At', type: 'datetime'}),

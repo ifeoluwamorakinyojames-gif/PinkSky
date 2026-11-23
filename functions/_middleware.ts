@@ -15,6 +15,7 @@ type PageData = {
   title?: string
   description?: string
   image?: string
+  imageAlt?: string
 }
 
 const SITE = 'https://pinkskybeauty.com'
@@ -45,7 +46,7 @@ export async function onRequest(context: Context): Promise<Response> {
   const pathname = url.pathname.replace(/\/+$/, '') || '/'
 
   // Do not interfere with APIs, admin, static assets or other routes.
-  const isDirectory = pathname === '/services' || pathname === '/blog'
+  const isDirectory = ['/', '/services', '/shop', '/blog', '/locations', '/programs', '/reviews'].includes(pathname)
   const match = pathname.match(/^\/(service|article|product)\/([^/]+)$/)
 
   if (!isDirectory && !match) {
@@ -62,7 +63,17 @@ export async function onRequest(context: Context): Promise<Response> {
   let page: PageData | null = null
   let pageType = 'website'
 
-  if (pathname === '/services') {
+  if (pathname === '/') {
+    page = {title: 'Pinksky Beauty & Wellness | Warri & Effurun', description: DEFAULT_DESCRIPTION, image: SITE + '/resources/pinksky-home-banner.jpg', imageAlt: 'Pinksky Beauty & Wellness in Warri and Effurun'}
+  } else if (pathname === '/shop') {
+    page = {title: 'Beauty Products in Warri & Effurun | Pinksky Beauty Shop', description: 'Shop skincare, beauty and wellness products at Pinksky Beauty & Wellness in Warri and Effurun.', image: SITE + '/resources/pinksky-home-banner.jpg', imageAlt: 'Pinksky Beauty & Wellness beauty shop'}
+  } else if (pathname === '/locations') {
+    page = {title: 'Our Locations in Warri & Effurun | Pinksky', description: 'Find Pinksky Beauty & Wellness branches and book beauty services in Warri and Effurun.'}
+  } else if (pathname === '/programs') {
+    page = {title: 'Beauty Packages & Programs | Pinksky', description: 'Explore beauty and wellness packages and programs at Pinksky Beauty & Wellness.'}
+  } else if (pathname === '/reviews') {
+    page = {title: 'Customer Reviews | Pinksky Beauty & Wellness', description: 'Read customer experiences and reviews for Pinksky Beauty & Wellness in Warri and Effurun.'}
+  } else if (pathname === '/services') {
     page = {
       title: 'Beauty & Wellness Services in Warri | Pinksky',
       description: 'Explore Pinksky beauty and wellness services in Warri and Effurun, including facials, teeth whitening, nails, massage and grooming.',
@@ -105,10 +116,11 @@ export async function onRequest(context: Context): Promise<Response> {
           short?: string
           description?: string
           image?: string
+          imageAlt?: string
         } | null>(
           `*[_type == "service" && published == true && slug.current == $slug][0]{
             name, seoTitle, metaDescription, short, description,
-            "image": heroImage.asset->url
+            "image": heroImage.asset->url, "imageAlt": heroImage.alt
           }`,
           {slug},
         )
@@ -118,6 +130,7 @@ export async function onRequest(context: Context): Promise<Response> {
             title: item.seoTitle || `${item.name} in Warri & Effurun | Pinksky`,
             description: item.metaDescription || item.short || item.description || DEFAULT_DESCRIPTION,
             image: item.image,
+            imageAlt: item.imageAlt,
           }
         }
       } else if (kind === 'article') {
@@ -127,10 +140,11 @@ export async function onRequest(context: Context): Promise<Response> {
           metaDescription?: string
           summary?: string
           image?: string
+          imageAlt?: string
         } | null>(
           `*[_type == "article" && published == true && slug.current == $slug][0]{
             title, seoTitle, metaDescription, summary,
-            "image": featuredImage.asset->url
+            "image": featuredImage.asset->url, "imageAlt": featuredImage.alt
           }`,
           {slug},
         )
@@ -141,6 +155,7 @@ export async function onRequest(context: Context): Promise<Response> {
             title: `${item.seoTitle || item.title} | Pinksky`,
             description: item.metaDescription || item.summary || DEFAULT_DESCRIPTION,
             image: item.image,
+            imageAlt: item.imageAlt,
           }
         }
       } else if (kind === 'product') {
@@ -150,10 +165,11 @@ export async function onRequest(context: Context): Promise<Response> {
           metaDescription?: string
           shortDescription?: string
           image?: string
+          imageAlt?: string
         } | null>(
           `*[_type == "product" && published == true && slug.current == $slug][0]{
             name, seoTitle, metaDescription, shortDescription,
-            "image": images[0].asset->url
+            "image": images[0].asset->url, "imageAlt": images[0].alt
           }`,
           {slug},
         )
@@ -163,6 +179,7 @@ export async function onRequest(context: Context): Promise<Response> {
             title: item.seoTitle || `${item.name} | Pinksky Beauty Shop`,
             description: item.metaDescription || item.shortDescription || DEFAULT_DESCRIPTION,
             image: item.image,
+            imageAlt: item.imageAlt,
           }
         }
       }
@@ -201,7 +218,11 @@ export async function onRequest(context: Context): Promise<Response> {
       : page.image
 
     tags.push(meta('og:image', imageUrl))
+    tags.push(meta('og:image:secure_url', imageUrl))
+    tags.push(meta('og:image:width', '1200'))
+    if (page.imageAlt) tags.push(meta('og:image:alt', page.imageAlt))
     tags.push(meta('twitter:image', imageUrl, true))
+    if (page.imageAlt) tags.push(meta('twitter:image:alt', page.imageAlt, true))
   }
 
   // Replace default template metadata to prevent duplicate tags.

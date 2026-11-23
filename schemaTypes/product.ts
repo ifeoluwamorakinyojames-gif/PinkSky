@@ -25,7 +25,7 @@ export const product = defineType({
       name: 'images',
       title: 'Product Images',
       type: 'array',
-      of: [{type: 'image', options: {hotspot: true}}],
+      of: [{type: 'image', options: {hotspot: true}, fields: [{name: 'alt', title: 'Image Alt Text', type: 'string', description: 'Identify the product and the specific angle or detail shown.'}]}],
       validation: r => r.max(8),
     }),
     defineField({name: 'seoTitle', title: 'SEO Title', type: 'string'}),
