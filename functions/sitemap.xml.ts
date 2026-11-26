@@ -41,13 +41,13 @@ export const onRequestGet = async ({env}: Context): Promise<Response> => {
   try {
     const client = createClient({projectId, dataset, apiVersion: '2026-10-04', useCdn: false})
     const [services, articles, products] = await Promise.all([
-      client.fetch<Page[]>(`*[_type == "service" && published == true && defined(slug.current)]{
+      client.fetch<Page[]>(`*[_type == "service" && published == true && !(_id in path("drafts.**")) && defined(slug.current)]{
         "slug": slug.current, "updatedAt": _updatedAt
       }`),
-      client.fetch<Page[]>(`*[_type == "article" && published == true && defined(slug.current)]{
+      client.fetch<Page[]>(`*[_type == "article" && published == true && !(_id in path("drafts.**")) && defined(slug.current)]{
         "slug": slug.current, "updatedAt": _updatedAt
       }`),
-      client.fetch<Page[]>(`*[_type == "product" && published == true && defined(slug.current)]{
+      client.fetch<Page[]>(`*[_type == "product" && published == true && !(_id in path("drafts.**")) && defined(slug.current)]{
         "slug": slug.current, "updatedAt": _updatedAt
       }`),
     ])
