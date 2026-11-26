@@ -16,6 +16,8 @@ type PageData = {
   description?: string
   image?: string
   imageAlt?: string
+  article?: {title?: string; authorName?: string; publishedAt?: string; updatedAt?: string; summary?: string; body?: Array<{_type?: string; style?: string; children?: Array<{text?: string}>; image?: string; alt?: string}>}
+  links?: Array<{title: string; slug: string}>
 }
 
 const SITE = 'https://pinkskybeauty.com'
@@ -83,6 +85,10 @@ export async function onRequest(context: Context): Promise<Response> {
       title: 'Beauty & Wellness Blog | Pinksky',
       description: 'Explore beauty, skincare, wellness and grooming articles from Pinksky Beauty & Wellness in Warri and Effurun.',
     }
+    try {
+      const client = createClient({projectId: context.env.SANITY_STUDIO_PROJECT_ID, dataset: context.env.SANITY_STUDIO_DATASET || 'production', apiVersion: '2025-02-19', useCdn: false})
+      page.links = await client.fetch(`*[_type == 'article' && published == true && !(_id in path('drafts.**')) && defined(slug.current)] | order(publishedAt desc){title, 'slug': slug.current}`)
+    } catch { /* React remains available if the directory lookup fails. */ }
   } else if (match) {
     const kind = match[1]
     let slug: string
@@ -105,7 +111,7 @@ export async function onRequest(context: Context): Promise<Response> {
         projectId,
         dataset,
         apiVersion: '2025-02-19',
-        useCdn: true,
+        useCdn: false,
       })
 
       if (kind === 'service') {
@@ -118,7 +124,7 @@ export async function onRequest(context: Context): Promise<Response> {
           image?: string
           imageAlt?: string
         } | null>(
-          `*[_type == "service" && published == true && slug.current == $slug][0]{
+          `*[_type == "service" && published == true && !(_id in path('drafts.**')) && slug.current == $slug][0]{
             name, seoTitle, metaDescription, short, description,
             "image": heroImage.asset->url, "imageAlt": heroImage.alt
           }`,
@@ -139,11 +145,16 @@ export async function onRequest(context: Context): Promise<Response> {
           seoTitle?: string
           metaDescription?: string
           summary?: string
+          authorName?: string
+          publishedAt?: string
+          updatedAt?: string
+          body?: NonNullable<PageData['article']>['body']
           image?: string
           imageAlt?: string
         } | null>(
-          `*[_type == "article" && published == true && slug.current == $slug][0]{
-            title, seoTitle, metaDescription, summary,
+          `*[_type == "article" && published == true && !(_id in path('drafts.**')) && slug.current == $slug][0]{
+            title, seoTitle, metaDescription, summary, authorName, publishedAt, 'updatedAt': _updatedAt,
+            body[]{..., 'image': asset->url},
             "image": featuredImage.asset->url, "imageAlt": featuredImage.alt
           }`,
           {slug},
@@ -152,11 +163,15 @@ export async function onRequest(context: Context): Promise<Response> {
         if (item) {
           pageType = 'article'
           page = {
-            title: `${item.seoTitle || item.title} | Pinksky`,
+            title: item.seoTitle || `${item.title} | Pinksky`,
+            article: item,
             description: item.metaDescription || item.summary || DEFAULT_DESCRIPTION,
             image: item.image,
             imageAlt: item.imageAlt,
           }
+          page.links = await client.fetch(`*[_type == 'article' && published == true && !(_id in path('drafts.**')) && defined(slug.current) && slug.current != $slug] | order(publishedAt desc)[0...6]{title, 'slug': slug.current}`, {slug})
+        } else {
+          return new Response('Article not found', {status: 404, headers: {'content-type': 'text/plain; charset=utf-8', 'x-robots-tag': 'noindex'}})
         }
       } else if (kind === 'product') {
         const item = await client.fetch<{
@@ -167,7 +182,7 @@ export async function onRequest(context: Context): Promise<Response> {
           image?: string
           imageAlt?: string
         } | null>(
-          `*[_type == "product" && published == true && slug.current == $slug][0]{
+          `*[_type == "product" && published == true && !(_id in path('drafts.**')) && slug.current == $slug][0]{
             name, seoTitle, metaDescription, shortDescription,
             "image": images[0].asset->url, "imageAlt": images[0].alt
           }`,
@@ -223,6 +238,25 @@ export async function onRequest(context: Context): Promise<Response> {
     if (page.imageAlt) tags.push(meta('og:image:alt', page.imageAlt))
     tags.push(meta('twitter:image', imageUrl, true))
     if (page.imageAlt) tags.push(meta('twitter:image:alt', page.imageAlt, true))
+  }
+
+  if (page.article) {
+    const a = page.article
+    const schema = {'@context': 'https://schema.org', '@type': 'BlogPosting', headline: a.title, description, url: canonical, mainEntityOfPage: canonical, image: page.image || undefined, datePublished: a.publishedAt || undefined, dateModified: a.updatedAt || undefined, author: a.authorName ? {'@type': 'Person', name: a.authorName} : undefined, publisher: {'@type': 'Organization', name: SITE_NAME, url: SITE}}
+    tags.push('<script type="application/ld+json" id="pinksky-article-schema">' + JSON.stringify(schema).replace(/</g, '\\u003c') + '</script>')
+  }
+  const links = (page.links || []).filter(a => /^[a-z0-9][a-z0-9-]*$/i.test(a.slug) && a.title).map(a => '<li><a href="/article/' + escapeHtml(a.slug) + '">' + escapeHtml(a.title) + '</a></li>').join('')
+  if (page.article || pathname === '/blog') {
+    const a = page.article
+    const body = (a?.body || []).map(block => {
+      if (block._type === 'image' && block.image && /^https:\/\/cdn\.sanity\.io\//.test(block.image)) return '<img src="' + escapeHtml(block.image) + '" alt="' + escapeHtml(block.alt || '') + '">'
+      if (block._type !== 'block') return ''
+      const tag = ['h2','h3','h4','blockquote'].includes(block.style || '') ? block.style : 'p'
+      return '<' + tag + '>' + escapeHtml((block.children || []).map(c => c.text || '').join('')) + '</' + tag + '>'
+    }).join('')
+    const image = page.image && /^https:\/\/cdn\.sanity\.io\//.test(page.image) ? '<img src="' + escapeHtml(page.image) + '" alt="' + escapeHtml(page.imageAlt || a?.title || '') + '">' : ''
+    const content = '<main><h1>' + escapeHtml(a?.title || 'Beauty & Wellness Blog') + '</h1>' + (a ? image + '<p>' + escapeHtml(a.summary || '') + '</p>' + body : '') + '<nav aria-label="Blog articles"><ul>' + links + '</ul></nav><a href="/blog">All articles</a> · <a href="/services">Explore services</a></main>'
+    html = html.replace('<div id="root"></div>', () => '<div id="root">' + content + '</div>')
   }
 
   // Replace default template metadata to prevent duplicate tags.
