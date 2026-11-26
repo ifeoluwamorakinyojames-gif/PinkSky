@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://pinkskybeauty.com/sitemap.xml
+Sitemap: https://pinkskybeauty.com/blog-sitemap.xml
